@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import {
-  AnimatePresence,
   motion,
   useMotionTemplate,
   useMotionValue,
@@ -11,7 +10,7 @@ import {
   useReducedMotion,
 } from "framer-motion";
 import type React from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   BadgeCheck,
@@ -264,9 +263,8 @@ function SecondaryButton({
 export default function Page() {
   const reduceMotion = useReducedMotion();
   const [activeNav, setActiveNav] = useState<string | null>(null);
-  const [portfolioIndex, setPortfolioIndex] = useState(0);
   const [isPortfolioPaused, setIsPortfolioPaused] = useState(false);
-  const PORTFOLIO_ITEMS_PER_VIEW = 3;
+  const portfolioRef = useRef<HTMLDivElement | null>(null);
 
   const navItems = useMemo(
     () => [
@@ -277,15 +275,10 @@ export default function Page() {
     []
   );
 
-  const visibleProjects = useMemo(() => {
-    if (PROJECTS.length <= PORTFOLIO_ITEMS_PER_VIEW) return PROJECTS;
-    const start = ((portfolioIndex % PROJECTS.length) + PROJECTS.length) % PROJECTS.length;
-    const selected: typeof PROJECTS[number][] = [];
-    for (let i = 0; i < PORTFOLIO_ITEMS_PER_VIEW; i += 1) {
-      selected.push(PROJECTS[(start + i) % PROJECTS.length]);
-    }
-    return selected;
-  }, [portfolioIndex, PORTFOLIO_ITEMS_PER_VIEW]);
+  const portfolioItems = useMemo(() => {
+    if (!PROJECTS.length) return [] as typeof PROJECTS[number][];
+    return [...PROJECTS, ...PROJECTS];
+  }, []);
 
   useEffect(() => {
     const elements = navItems
@@ -314,12 +307,33 @@ export default function Page() {
 
   useEffect(() => {
     if (isPortfolioPaused) return;
-    if (PROJECTS.length <= PORTFOLIO_ITEMS_PER_VIEW) return;
+    const el = portfolioRef.current;
+    if (!el) return;
+    if (PROJECTS.length <= 1) return;
+
+    const getStep = () => {
+      const firstCard = el.querySelector<HTMLElement>("[data-portfolio-card='true']");
+      if (!firstCard) return el.clientWidth;
+      const style = window.getComputedStyle(el);
+      const rawGap = style.gap || style.columnGap || "16px";
+      const gap = Number.parseFloat(rawGap.split(" ")[0] ?? "16");
+      return firstCard.getBoundingClientRect().width + (Number.isFinite(gap) ? gap : 16);
+    };
+
     const id = window.setInterval(() => {
-      setPortfolioIndex((v) => (v + PORTFOLIO_ITEMS_PER_VIEW) % PROJECTS.length);
+      const target = portfolioRef.current;
+      if (!target) return;
+
+      const half = target.scrollWidth / 2;
+      if (half > 0 && target.scrollLeft >= half) {
+        target.scrollLeft -= half;
+      }
+
+      const nextLeft = target.scrollLeft + getStep();
+      target.scrollTo({ left: nextLeft, behavior: reduceMotion ? "auto" : "smooth" });
     }, 3000);
     return () => window.clearInterval(id);
-  }, [isPortfolioPaused, PORTFOLIO_ITEMS_PER_VIEW]);
+  }, [isPortfolioPaused, reduceMotion]);
 
   const heroX = useMotionValue(0);
   const heroY = useMotionValue(0);
@@ -782,43 +796,29 @@ export default function Page() {
 
             <motion.div
               variants={item}
+              ref={portfolioRef}
               onFocusCapture={() => setIsPortfolioPaused(true)}
               onBlurCapture={() => setIsPortfolioPaused(false)}
-              className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+              onPointerDown={() => setIsPortfolioPaused(true)}
+              onPointerUp={() => setIsPortfolioPaused(false)}
+              onPointerCancel={() => setIsPortfolioPaused(false)}
+              className="mt-10 flex gap-4 overflow-x-auto scroll-smooth pb-1 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
-              <AnimatePresence mode="popLayout" initial={false}>
-                {visibleProjects.map((p) => (
-                  <motion.div
-                    key={p.title}
-                    layout
-                    onPointerDown={(e) => {
-                      if (e.pointerType === "mouse") setIsPortfolioPaused(true);
-                    }}
-                    initial={
-                      reduceMotion ? undefined : { opacity: 0, y: 10, filter: "blur(8px)" }
-                    }
-                    animate={
-                      reduceMotion ? undefined : { opacity: 1, y: 0, filter: "blur(0px)" }
-                    }
-                    exit={
-                      reduceMotion ? undefined : { opacity: 0, y: -10, filter: "blur(8px)" }
-                    }
-                    transition={
-                      reduceMotion
-                        ? undefined
-                        : { duration: 0.38, ease: [0.21, 1, 0.32, 1] as const }
-                    }
-                  >
-                    <ProjectCard
-                      title={p.title}
-                      subtitle={p.subtitle}
-                      imageSrc={p.imageSrc}
-                      tags={[...p.tags]}
-                      href={p.href}
-                    />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+              {portfolioItems.map((p, i) => (
+                <div
+                  key={`${p.title}-${i}`}
+                  data-portfolio-card="true"
+                  className="snap-start shrink-0 basis-full md:basis-[calc(50%-0.5rem)] lg:basis-[calc(33.333%-0.666rem)]"
+                >
+                  <ProjectCard
+                    title={p.title}
+                    subtitle={p.subtitle}
+                    imageSrc={p.imageSrc}
+                    tags={[...p.tags]}
+                    href={"href" in p ? p.href : undefined}
+                  />
+                </div>
+              ))}
             </motion.div>
           </motion.div>
         </Section>
