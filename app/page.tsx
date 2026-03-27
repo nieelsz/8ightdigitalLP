@@ -266,6 +266,7 @@ export default function Page() {
   const [activeNav, setActiveNav] = useState<string | null>(null);
   const [portfolioIndex, setPortfolioIndex] = useState(0);
   const [isPortfolioPaused, setIsPortfolioPaused] = useState(false);
+  const PORTFOLIO_ITEMS_PER_VIEW = 3;
 
   const navItems = useMemo(
     () => [
@@ -277,14 +278,14 @@ export default function Page() {
   );
 
   const visibleProjects = useMemo(() => {
-    if (PROJECTS.length <= 3) return PROJECTS;
+    if (PROJECTS.length <= PORTFOLIO_ITEMS_PER_VIEW) return PROJECTS;
     const start = ((portfolioIndex % PROJECTS.length) + PROJECTS.length) % PROJECTS.length;
     const selected: typeof PROJECTS[number][] = [];
-    for (let i = 0; i < 3; i += 1) {
+    for (let i = 0; i < PORTFOLIO_ITEMS_PER_VIEW; i += 1) {
       selected.push(PROJECTS[(start + i) % PROJECTS.length]);
     }
     return selected;
-  }, [portfolioIndex]);
+  }, [portfolioIndex, PORTFOLIO_ITEMS_PER_VIEW]);
 
   useEffect(() => {
     const elements = navItems
@@ -312,14 +313,13 @@ export default function Page() {
   }, [navItems]);
 
   useEffect(() => {
-    if (reduceMotion) return;
     if (isPortfolioPaused) return;
-    if (PROJECTS.length <= 3) return;
+    if (PROJECTS.length <= PORTFOLIO_ITEMS_PER_VIEW) return;
     const id = window.setInterval(() => {
-      setPortfolioIndex((v) => (v + 1) % PROJECTS.length);
+      setPortfolioIndex((v) => (v + PORTFOLIO_ITEMS_PER_VIEW) % PROJECTS.length);
     }, 3000);
     return () => window.clearInterval(id);
-  }, [reduceMotion, isPortfolioPaused]);
+  }, [isPortfolioPaused, PORTFOLIO_ITEMS_PER_VIEW]);
 
   const heroX = useMotionValue(0);
   const heroY = useMotionValue(0);
@@ -791,8 +791,9 @@ export default function Page() {
                   <motion.div
                     key={p.title}
                     layout
-                    onPointerEnter={() => setIsPortfolioPaused(true)}
-                    onPointerLeave={() => setIsPortfolioPaused(false)}
+                    onPointerDown={(e) => {
+                      if (e.pointerType === "mouse") setIsPortfolioPaused(true);
+                    }}
                     initial={
                       reduceMotion ? undefined : { opacity: 0, y: 10, filter: "blur(8px)" }
                     }
