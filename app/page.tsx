@@ -265,6 +265,15 @@ export default function Page() {
   const [activeNav, setActiveNav] = useState<string | null>(null);
   const [isPortfolioPaused, setIsPortfolioPaused] = useState(false);
   const portfolioRef = useRef<HTMLDivElement | null>(null);
+  const portfolioRafRef = useRef<number | null>(null);
+  const portfolioLastTsRef = useRef<number | null>(null);
+  const portfolioResumeTimeoutRef = useRef<number | null>(null);
+  const portfolioDragRef = useRef<{
+    active: boolean;
+    pointerId: number;
+    startX: number;
+    startScrollLeft: number;
+  } | null>(null);
 
   const navItems = useMemo(
     () => [
@@ -306,34 +315,64 @@ export default function Page() {
   }, [navItems]);
 
   useEffect(() => {
+    const id = window.requestAnimationFrame(() => {
+      const el = portfolioRef.current;
+      if (!el) return;
+      if (PROJECTS.length <= 1) return;
+      const half = el.scrollWidth / 2;
+      const max = el.scrollWidth - el.clientWidth;
+      if (half > 0 && max > 0) el.scrollLeft = Math.min(half, max);
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, []);
+
+  useEffect(() => {
+    if (reduceMotion) return;
     if (isPortfolioPaused) return;
     const el = portfolioRef.current;
     if (!el) return;
     if (PROJECTS.length <= 1) return;
 
-    const getStep = () => {
-      const firstCard = el.querySelector<HTMLElement>("[data-portfolio-card='true']");
-      if (!firstCard) return el.clientWidth;
-      const style = window.getComputedStyle(el);
-      const rawGap = style.gap || style.columnGap || "16px";
-      const gap = Number.parseFloat(rawGap.split(" ")[0] ?? "16");
-      return firstCard.getBoundingClientRect().width + (Number.isFinite(gap) ? gap : 16);
-    };
+    if (portfolioRafRef.current != null) {
+      window.cancelAnimationFrame(portfolioRafRef.current);
+      portfolioRafRef.current = null;
+    }
+    portfolioLastTsRef.current = null;
 
-    const id = window.setInterval(() => {
+    const speedPxPerSecond = 28;
+
+    const loop = (ts: number) => {
       const target = portfolioRef.current;
       if (!target) return;
 
-      const half = target.scrollWidth / 2;
-      if (half > 0 && target.scrollLeft >= half) {
-        target.scrollLeft -= half;
+      const last = portfolioLastTsRef.current;
+      portfolioLastTsRef.current = ts;
+
+      if (last != null) {
+        const delta = ts - last;
+        const half = target.scrollWidth / 2;
+        const max = target.scrollWidth - target.clientWidth;
+
+        if (half > 0 && max > 0) {
+          if (target.scrollLeft <= 0) target.scrollLeft += half;
+          else if (target.scrollLeft >= max) target.scrollLeft -= half;
+        }
+
+        target.scrollLeft += (speedPxPerSecond * delta) / 1000;
       }
 
-      const nextLeft = target.scrollLeft + getStep();
-      target.scrollTo({ left: nextLeft, behavior: reduceMotion ? "auto" : "smooth" });
-    }, 3000);
-    return () => window.clearInterval(id);
-  }, [isPortfolioPaused, reduceMotion]);
+      portfolioRafRef.current = window.requestAnimationFrame(loop);
+    };
+
+    portfolioRafRef.current = window.requestAnimationFrame(loop);
+    return () => {
+      if (portfolioRafRef.current != null) {
+        window.cancelAnimationFrame(portfolioRafRef.current);
+        portfolioRafRef.current = null;
+      }
+      portfolioLastTsRef.current = null;
+    };
+  }, [reduceMotion, isPortfolioPaused]);
 
   const heroX = useMotionValue(0);
   const heroY = useMotionValue(0);
@@ -799,10 +838,73 @@ export default function Page() {
               ref={portfolioRef}
               onFocusCapture={() => setIsPortfolioPaused(true)}
               onBlurCapture={() => setIsPortfolioPaused(false)}
-              onPointerDown={() => setIsPortfolioPaused(true)}
-              onPointerUp={() => setIsPortfolioPaused(false)}
-              onPointerCancel={() => setIsPortfolioPaused(false)}
-              className="mt-10 flex gap-4 overflow-x-auto scroll-smooth pb-1 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              onScroll={() => {
+                const el = portfolioRef.current;
+                if (!el) return;
+                const half = el.scrollWidth / 2;
+                const max = el.scrollWidth - el.clientWidth;
+                if (half <= 0 || max <= 0) return;
+                if (el.scrollLeft <= 0) el.scrollLeft += half;
+                else if (el.scrollLeft >= max) el.scrollLeft -= half;
+              }}
+              onPointerDown={(e) => {
+                if (portfolioResumeTimeoutRef.current != null) {
+                  window.clearTimeout(portfolioResumeTimeoutRef.current);
+                  portfolioResumeTimeoutRef.current = null;
+                }
+                setIsPortfolioPaused(true);
+                if (e.pointerType !== "mouse") return;
+                if (e.button !== 0) return;
+                const el = portfolioRef.current;
+                if (!el) return;
+                portfolioDragRef.current = {
+                  active: true,
+                  pointerId: e.pointerId,
+                  startX: e.clientX,
+                  startScrollLeft: el.scrollLeft,
+                };
+                el.setPointerCapture(e.pointerId);
+              }}
+              onPointerMove={(e) => {
+                const drag = portfolioDragRef.current;
+                if (!drag?.active) return;
+                const el = portfolioRef.current;
+                if (!el) return;
+                const dx = e.clientX - drag.startX;
+                el.scrollLeft = drag.startScrollLeft - dx;
+                const half = el.scrollWidth / 2;
+                const max = el.scrollWidth - el.clientWidth;
+                if (half <= 0 || max <= 0) return;
+                if (el.scrollLeft <= 0) {
+                  el.scrollLeft += half;
+                  drag.startScrollLeft += half;
+                } else if (el.scrollLeft >= max) {
+                  el.scrollLeft -= half;
+                  drag.startScrollLeft -= half;
+                }
+              }}
+              onPointerUp={() => {
+                const drag = portfolioDragRef.current;
+                const el = portfolioRef.current;
+                if (drag?.active && el) {
+                  try {
+                    el.releasePointerCapture(drag.pointerId);
+                  } catch (err) {
+                    void err;
+                  }
+                }
+                portfolioDragRef.current = null;
+                portfolioResumeTimeoutRef.current = window.setTimeout(() => {
+                  setIsPortfolioPaused(false);
+                }, 900);
+              }}
+              onPointerCancel={() => {
+                portfolioDragRef.current = null;
+                portfolioResumeTimeoutRef.current = window.setTimeout(() => {
+                  setIsPortfolioPaused(false);
+                }, 900);
+              }}
+              className="mt-10 flex gap-4 overflow-x-auto scroll-smooth pb-1 snap-x snap-proximity select-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:cursor-grab md:active:cursor-grabbing"
             >
               {portfolioItems.map((p, i) => (
                 <div
