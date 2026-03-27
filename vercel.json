@@ -1,6 +1,4 @@
 {
-  "name": "8ight-digital-portfolio",
-  "framework": "vite",
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist"
+  "name": "eight-digital",
+  "framework": "nextjs"
 }
