@@ -40,7 +40,15 @@ const WHATSAPP_HREF =
     "Olá! Vim pelo site da Eight Digital.\n\nQuero:\n1) (LP / Site / E-commerce / Sistema)\n2) Prazo ideal:\n3) Link do que você quer como referência:\n4) O que precisa acontecer pra valer a pena:"
   );
 
-const PROJECTS = [
+type Project = {
+  title: string;
+  subtitle: string;
+  imageSrc?: string;
+  tags: string[];
+  href?: string;
+};
+
+const PROJECTS: Project[] = [
   {
     title: "Ecommerce Loja Befa",
     subtitle: "E-commerce com foco em conversão",
@@ -56,6 +64,24 @@ const PROJECTS = [
     href: "https://kid.devmais.com",
   },
   {
+    title: "Moura & Alves Advogados",
+    subtitle: "Site institucional para escritório de advocacia",
+    tags: ["Institucional", "Credibilidade", "Editorial"],
+    href: "https://mouraalves.8ightdigital.com.br/",
+  },
+  {
+    title: "Dra. Isabela Rocha",
+    subtitle: "Landing page editorial com foco em consultas e programa online",
+    tags: ["Landing page", "Saúde", "Instagram"],
+    href: "https://draisabelarocha.8ightdigital.com.br/",
+  },
+  {
+    title: "Viva Clínica",
+    subtitle: "Clínica de nutrição + psicologia",
+    tags: ["Institucional", "Conteúdo", "Conversão"],
+    href: "https://vivaclinica.8ightdigital.com.br/",
+  },
+  {
     title: "Framex Pro",
     subtitle: "IA para imagens profissionais de produto",
     imageSrc: "/projects/Gemini_Generated_Image_wyua19wyua19wyua.webp",
@@ -69,13 +95,7 @@ const PROJECTS = [
     tags: ["Design", "Identidade visual", "Social"],
     href: "https://alisson.8ightdigital.com.br",
   },
-  {
-    title: "Sistemas",
-    subtitle: "Dashboards e operações internas",
-    imageSrc: "/projects/soma-dashboard.png",
-    tags: ["Sistema web", "Arquitetura", "Manutenção fácil"],
-  },
-] as const;
+];
 
 const TESTIMONIALS = [
   {
@@ -285,7 +305,7 @@ export default function Page() {
   );
 
   const portfolioItems = useMemo(() => {
-    if (!PROJECTS.length) return [] as typeof PROJECTS[number][];
+    if (!PROJECTS.length) return [] as Project[];
     return [...PROJECTS, ...PROJECTS];
   }, []);
 
@@ -658,7 +678,7 @@ export default function Page() {
                       </motion.div>
                     </div>
 
-                    <div className="mt-6 space-y-3">
+                    <div className="mt-6 divide-y divide-white/10">
                       {[
                         "O que você precisa fazer agora (prioridades).",
                         "O que cortar (o que não dá retorno).",
@@ -666,7 +686,7 @@ export default function Page() {
                       ].map((t) => (
                         <div
                           key={t}
-                          className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3"
+                          className="flex items-start gap-3 py-4"
                         >
                           <div className="mt-0.5 grid h-6 w-6 place-items-center rounded-lg bg-[#7B2FFF]/15 text-[#7B2FFF]">
                             <CheckIcon />
@@ -735,75 +755,101 @@ export default function Page() {
                 Serviços para você vender mais (e não travar depois).
               </div>
               <div className="mt-3 text-base font-light leading-relaxed text-white/70">
-                Você sabe o que compra e o que entrega. A gente alinha escopo
-                no WhatsApp e manda uma proposta direta.
+                LP, site, e-commerce ou sistema. E quando faz sentido, entra IA
+                aplicada em imagens para deixar o visual com cara de marca
+                grande.
               </div>
             </motion.div>
 
-            <motion.div
-              variants={item}
-              className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-            >
-              <ServiceCard
-                title="Landing Page"
-                icon={<Zap className="h-5 w-5" />}
-                bullets={[
-                  "Copy orientada a conversão",
-                  "Animações premium (sem exagero)",
-                  "Performance e SEO técnico",
-                ]}
-                tag="Entrega rápida"
-              />
-              <ServiceCard
-                title="E-commerce"
-                icon={<ShoppingBag className="h-5 w-5" />}
-                bullets={[
-                  "Checkout fluido e rápido",
-                  "Catálogo, banners e coleções",
-                  "Eventos e métricas (Pixel/GA4)",
-                ]}
-                tag="Vender mais"
-              />
-              <ServiceCard
-                title="Site Institucional"
-                icon={<Layers className="h-5 w-5" />}
-                bullets={[
-                  "Design com autoridade",
-                  "Seções com narrativa clara",
-                  "Base pronta pra escalar",
-                ]}
-                tag="Marca forte"
-              />
-              <ServiceCard
-                title="Sistema Web"
-                icon={<Code2 className="h-5 w-5" />}
-                bullets={[
-                  "Dashboard + regras de negócio",
-                  "Arquitetura estável",
-                  "Fácil de manter e evoluir",
-                ]}
-                tag="Operação rodando"
-              />
-              <ServiceCard
-                title="Branding"
-                icon={<Sparkles className="h-5 w-5" />}
-                bullets={[
-                  "Identidade consistente",
-                  "Direção visual e tom",
-                  "Assets prontos pra uso",
-                ]}
-                tag="Mais premium"
-              />
-              <ServiceCard
-                title="Imagens com IA"
-                icon={<Wand2 className="h-5 w-5" />}
-                bullets={[
-                  "Imagens únicas para anúncios",
-                  "Estilo alinhado à marca",
-                  "Entrega rápida",
-                ]}
-                tag="Criativo"
-              />
+            <motion.div variants={item} className="mt-10">
+              <SpotlightCard className="p-6" glow="rgba(123,47,255,0.12)">
+                <div className="grid gap-5 lg:grid-cols-12 lg:items-start">
+                  <div className="lg:col-span-4">
+                    <div className="font-display text-lg font-extrabold tracking-tight">
+                      Entregas principais
+                    </div>
+                    <div className="mt-2 text-sm font-light leading-relaxed text-white/70">
+                      Menos “pacotes”. Mais clareza do que entra e por quê.
+                    </div>
+                  </div>
+
+                  <div className="grid gap-6 lg:col-span-8 lg:grid-cols-2">
+                    {[
+                      {
+                        title: "Landing Page",
+                        tag: "7–14d",
+                        icon: <Zap className="h-5 w-5" />,
+                        bullets: ["Copy e hierarquia para conversão", "Performance + SEO técnico"],
+                      },
+                      {
+                        title: "Site Institucional",
+                        tag: "Marca forte",
+                        icon: <Layers className="h-5 w-5" />,
+                        bullets: ["Narrativa clara + credibilidade", "Base pronta para evoluir"],
+                      },
+                      {
+                        title: "E-commerce",
+                        tag: "Vender mais",
+                        icon: <ShoppingBag className="h-5 w-5" />,
+                        bullets: ["Checkout fluido + rápido", "Métricas (Pixel/GA4) e eventos"],
+                      },
+                      {
+                        title: "Sistema Web",
+                        tag: "Operação",
+                        icon: <Code2 className="h-5 w-5" />,
+                        bullets: ["Regras de negócio + dashboards", "Código estável e fácil de manter"],
+                      },
+                    ].map((s) => (
+                      <div key={s.title} className="border-l border-white/10 pl-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-center gap-3">
+                            <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#7B2FFF]/15 text-[#7B2FFF]">
+                              {s.icon}
+                            </div>
+                            <div className="font-display text-base font-extrabold tracking-tight">
+                              {s.title}
+                            </div>
+                          </div>
+                          <div className="rounded-full border border-white/12 bg-[#0A0A0A]/55 px-3 py-1 text-xs font-semibold text-white/70">
+                            {s.tag}
+                          </div>
+                        </div>
+                        <div className="mt-3 space-y-2 text-sm font-light text-white/75">
+                          {s.bullets.map((b) => (
+                            <div key={b} className="flex items-start gap-3">
+                              <span className="mt-0.5 text-[#7B2FFF]">
+                                <Check className="h-4 w-4" />
+                              </span>
+                              <span>{b}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-6 border-t border-white/10 pt-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#7B2FFF]/15 text-[#7B2FFF]">
+                        <Wand2 className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <div className="font-display text-base font-extrabold tracking-tight">
+                          IA aplicada em imagens
+                        </div>
+                        <div className="mt-1 text-sm font-light leading-relaxed text-white/70">
+                          Modelos virtuais, remodelagem de comida/roupa e catálogo com cara de marca grande.
+                        </div>
+                      </div>
+                    </div>
+                    <div className="rounded-full border border-white/12 bg-[#0A0A0A]/55 px-3 py-1 text-xs font-semibold text-white/70">
+                      Opcional
+                    </div>
+                  </div>
+                </div>
+              </SpotlightCard>
             </motion.div>
 
             <motion.div
@@ -838,6 +884,13 @@ export default function Page() {
               ref={portfolioRef}
               onFocusCapture={() => setIsPortfolioPaused(true)}
               onBlurCapture={() => setIsPortfolioPaused(false)}
+              onWheel={(e) => {
+                const el = portfolioRef.current;
+                if (!el) return;
+                if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+                el.scrollLeft += e.deltaY;
+                e.preventDefault();
+              }}
               onScroll={() => {
                 const el = portfolioRef.current;
                 if (!el) return;
@@ -904,20 +957,20 @@ export default function Page() {
                   setIsPortfolioPaused(false);
                 }, 900);
               }}
-              className="mt-10 flex gap-4 overflow-x-auto scroll-smooth pb-1 snap-x snap-proximity select-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:cursor-grab md:active:cursor-grabbing"
+              className="mt-10 flex gap-4 overflow-x-auto overflow-y-hidden pb-2 select-none [-ms-overflow-style:none] [scrollbar-width:none] [-webkit-overflow-scrolling:touch] [touch-action:pan-x] [&::-webkit-scrollbar]:hidden md:cursor-grab md:active:cursor-grabbing"
             >
               {portfolioItems.map((p, i) => (
                 <div
                   key={`${p.title}-${i}`}
                   data-portfolio-card="true"
-                  className="snap-start shrink-0 basis-full md:basis-[calc(50%-0.5rem)] lg:basis-[calc(33.333%-0.666rem)]"
+                  className="shrink-0 basis-[88%] sm:basis-[70%] md:basis-[calc(50%-0.5rem)] lg:basis-[calc(33.333%-0.666rem)]"
                 >
                   <ProjectCard
                     title={p.title}
                     subtitle={p.subtitle}
                     imageSrc={p.imageSrc}
-                    tags={[...p.tags]}
-                    href={"href" in p ? p.href : undefined}
+                    tags={p.tags}
+                    href={p.href}
                   />
                 </div>
               ))}
@@ -946,13 +999,26 @@ export default function Page() {
               </div>
             </motion.div>
 
-            <motion.div
-              variants={item}
-              className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4"
-            >
-              {TESTIMONIALS.map((t) => (
-                <TestimonialCard key={`${t.name}-${t.company}`} {...t} />
-              ))}
+            <motion.div variants={item} className="mt-10">
+              <SpotlightCard className="p-6" glow="rgba(123,47,255,0.12)">
+                <div className="grid gap-6 md:grid-cols-2">
+                  {TESTIMONIALS.map((t) => (
+                    <div key={`${t.name}-${t.company}`} className="border-l border-white/10 pl-4">
+                      <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-white/70">
+                        <BadgeCheck className="h-4 w-4 text-[#7B2FFF]" />
+                        {t.highlight}
+                      </div>
+                      <div className="mt-3 text-sm font-light leading-relaxed text-white/80">
+                        “{t.quote}”
+                      </div>
+                      <div className="mt-4 text-xs text-white/60">
+                        <span className="font-semibold text-white/75">{t.name}</span>{" "}
+                        · {t.role} · {t.company}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </SpotlightCard>
             </motion.div>
           </motion.div>
         </Section>
@@ -975,7 +1041,7 @@ export default function Page() {
 
             <motion.div
               variants={item}
-              className="mt-10 grid gap-4 lg:grid-cols-3"
+              className="mt-10 grid gap-4 lg:grid-cols-2"
             >
               <SpotlightCard className="p-6" glow="rgba(123,47,255,0.16)">
                 <div className="flex items-start justify-between gap-4">
@@ -995,18 +1061,30 @@ export default function Page() {
                 </div>
               </SpotlightCard>
 
-              <div className="grid gap-4 lg:col-span-2">
-                {FAQ_ITEMS.map((f) => (
-                  <SpotlightCard key={f.q} className="p-6" glow="rgba(123,47,255,0.12)">
-                    <div className="font-display text-base font-extrabold tracking-tight">
-                      {f.q}
-                    </div>
-                    <div className="mt-2 text-sm font-light leading-relaxed text-white/75">
-                      {f.a}
-                    </div>
-                  </SpotlightCard>
-                ))}
-              </div>
+              <SpotlightCard className="p-6" glow="rgba(123,47,255,0.12)">
+                <div className="font-display text-lg font-extrabold tracking-tight">
+                  Perguntas frequentes
+                </div>
+                <div className="mt-4 divide-y divide-white/10">
+                  {FAQ_ITEMS.map((f) => (
+                    <details key={f.q} className="group py-4">
+                      <summary className="cursor-pointer list-none select-none">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="font-display text-sm font-extrabold tracking-tight text-white/90">
+                            {f.q}
+                          </div>
+                          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/70 transition-transform duration-200 group-open:rotate-90">
+                            <ChevronRight className="h-4 w-4" />
+                          </div>
+                        </div>
+                      </summary>
+                      <div className="mt-3 text-sm font-light leading-relaxed text-white/75">
+                        {f.a}
+                      </div>
+                    </details>
+                  ))}
+                </div>
+              </SpotlightCard>
             </motion.div>
           </motion.div>
         </Section>
@@ -1032,34 +1110,52 @@ export default function Page() {
                 </div>
             </motion.div>
 
-            <motion.div
-              variants={item}
-              className="mt-10 grid gap-4 sm:grid-cols-2"
-            >
-              <StepCard
-                number="01"
-                title="Briefing cirúrgico"
-                desc="A gente trava o objetivo, a oferta e o que precisa acontecer pra dar ROI. Sem PDF bonito que não vira nada."
-                icon={<Sparkles className="h-5 w-5" />}
-              />
-              <StepCard
-                number="02"
-                title="UI/UX + Copy"
-                desc="Design com autoridade e texto que conduz a ação. Cada bloco existe por um motivo."
-                icon={<Layers className="h-5 w-5" />}
-              />
-              <StepCard
-                number="03"
-                title="Build rápido e sólido"
-                desc="Código limpo, performance e componentes que não viram dor de cabeça depois."
-                icon={<Code2 className="h-5 w-5" />}
-              />
-              <StepCard
-                number="04"
-                title="Deploy + ajustes"
-                desc="Publica, mede, melhora. Você não fica refém: entregamos pra escalar com previsibilidade."
-                icon={<ShieldCheck className="h-5 w-5" />}
-              />
+            <motion.div variants={item} className="mt-10">
+              <SpotlightCard className="p-6" glow="rgba(123,47,255,0.12)">
+                <div className="grid gap-6 sm:grid-cols-2">
+                  {[
+                    {
+                      n: "01",
+                      title: "Briefing cirúrgico",
+                      desc: "Objetivo, oferta e critérios de sucesso. Sem reunião infinita.",
+                      icon: <Sparkles className="h-5 w-5" />,
+                    },
+                    {
+                      n: "02",
+                      title: "UI/UX + Copy",
+                      desc: "Hierarquia, prova e CTA. Cada bloco existe por um motivo.",
+                      icon: <Layers className="h-5 w-5" />,
+                    },
+                    {
+                      n: "03",
+                      title: "Build rápido e sólido",
+                      desc: "Performance, acessibilidade e código que dá para evoluir.",
+                      icon: <Code2 className="h-5 w-5" />,
+                    },
+                    {
+                      n: "04",
+                      title: "Deploy + ajustes",
+                      desc: "Publica, mede, melhora. Sem lock-in e sem gambiarra.",
+                      icon: <ShieldCheck className="h-5 w-5" />,
+                    },
+                  ].map((s) => (
+                    <div key={s.n} className="flex items-start gap-4">
+                      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#7B2FFF]/15 text-[#7B2FFF]">
+                        {s.icon}
+                      </div>
+                      <div>
+                        <div className="text-xs font-semibold text-white/55">{s.n}</div>
+                        <div className="mt-1 font-display text-base font-extrabold tracking-tight">
+                          {s.title}
+                        </div>
+                        <div className="mt-2 text-sm font-light leading-relaxed text-white/70">
+                          {s.desc}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </SpotlightCard>
             </motion.div>
           </motion.div>
         </Section>
@@ -1241,58 +1337,13 @@ function Stat({
   hint: string;
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#0A0A0A]/40 p-4 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset]">
+    <div className="px-1 sm:px-2">
       <div className="text-xs font-semibold text-white/55">{label}</div>
       <div className="mt-2 font-display text-3xl font-extrabold tracking-tight">
         {value}
       </div>
       <div className="mt-1 text-sm font-light text-white/60">{hint}</div>
     </div>
-  );
-}
-
-function ServiceCard({
-  title,
-  icon,
-  bullets,
-  tag,
-}: {
-  title: string;
-  icon: React.ReactNode;
-  bullets: string[];
-  tag: string;
-}) {
-  return (
-    <SpotlightCard className="p-5">
-      <div className="flex items-start justify-between gap-4">
-        <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#7B2FFF]/15 text-[#7B2FFF]">
-          {icon}
-        </div>
-        <div className="rounded-full border border-white/12 bg-[#0A0A0A]/55 px-3 py-1 text-xs font-semibold text-white/70">
-          {tag}
-        </div>
-      </div>
-
-      <div className="mt-5">
-        <div className="font-display text-lg font-extrabold tracking-tight">
-          {title}
-        </div>
-        <div className="mt-2 text-sm font-light text-white/65">
-          Orçamento sob medida
-        </div>
-      </div>
-
-      <div className="mt-5 space-y-3">
-        {bullets.map((b) => (
-          <div key={b} className="flex items-start gap-3 text-sm text-white/75">
-            <span className="mt-0.5 text-[#7B2FFF]">
-              <Check className="h-4 w-4" />
-            </span>
-            <span>{b}</span>
-          </div>
-        ))}
-      </div>
-    </SpotlightCard>
   );
 }
 
@@ -1305,7 +1356,7 @@ function ProjectCard({
 }: {
   title: string;
   subtitle: string;
-  imageSrc: string;
+  imageSrc?: string;
   tags: string[];
   href?: string;
 }) {
@@ -1316,6 +1367,13 @@ function ProjectCard({
     resolvedHref.startsWith("mailto:") ||
     resolvedHref.startsWith("tel:") ||
     resolvedHref === WHATSAPP_HREF;
+
+  const initials = title
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => (w[0] ?? "").toUpperCase())
+    .join("");
 
   return (
     <SpotlightCard
@@ -1328,123 +1386,61 @@ function ProjectCard({
         rel={isExternal ? "noreferrer" : undefined}
         className="group flex h-full flex-col overflow-hidden rounded-2xl"
       >
-      <div className="relative aspect-[16/10] overflow-hidden">
-        <Image
-          src={imageSrc}
-          alt={title}
-          fill
-          className="object-cover transition-transform duration-300 group-hover:scale-[1.04]"
-          sizes="(max-width: 1024px) 100vw, 33vw"
-          priority={false}
-        />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-transparent opacity-80" />
-        <div className="pointer-events-none absolute inset-0 shadow-[0_0_0_1px_rgba(255,255,255,0.05)_inset]" />
-      </div>
-
-      <div className="flex flex-1 flex-col p-5">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="font-display text-lg font-extrabold tracking-tight">
-              {title}
+        <div className="relative aspect-[16/10] overflow-hidden">
+          {imageSrc ? (
+            <Image
+              src={imageSrc}
+              alt={title}
+              fill
+              className="object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+              sizes="(max-width: 1024px) 100vw, 33vw"
+              priority={false}
+            />
+          ) : (
+            <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_20%_25%,rgba(123,47,255,0.35)_0%,transparent_60%),radial-gradient(55%_55%_at_80%_55%,rgba(245,245,245,0.12)_0%,transparent_62%),linear-gradient(to_bottom,rgba(255,255,255,0.06),rgba(10,10,10,0.65))]">
+              <div className="absolute inset-0 opacity-50 [background-image:linear-gradient(to_right,rgba(245,245,245,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(245,245,245,0.06)_1px,transparent_1px)] [background-size:64px_64px]" />
+              <div className="absolute inset-0 grid place-items-center">
+                <div className="rounded-2xl border border-white/12 bg-[#0A0A0A]/55 px-4 py-2 font-display text-2xl font-extrabold tracking-tight text-white/85 shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset]">
+                  {initials}
+                </div>
+              </div>
             </div>
-            <div className="mt-1 text-sm font-light text-white/70">
-              {subtitle}
+          )}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-transparent opacity-80" />
+          <div className="pointer-events-none absolute inset-0 shadow-[0_0_0_1px_rgba(255,255,255,0.05)_inset]" />
+        </div>
+
+        <div className="flex flex-1 flex-col p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="font-display text-lg font-extrabold tracking-tight">
+                {title}
+              </div>
+              <div className="mt-1 text-sm font-light text-white/70">
+                {subtitle}
+              </div>
+            </div>
+            <div className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/70 transition-colors duration-200 group-hover:border-white/15 group-hover:text-white">
+              <ArrowRight className="h-4 w-4" />
             </div>
           </div>
-          <div className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/70 transition-colors duration-200 group-hover:border-white/15 group-hover:text-white">
-            <ArrowRight className="h-4 w-4" />
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {tags.map((t) => (
+              <div
+                key={t}
+                className="rounded-full border border-white/10 bg-[#0A0A0A]/45 px-3 py-1 text-xs text-white/70"
+              >
+                {t}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-5 text-sm font-semibold text-white/75">
+            Ver como a Eight entrega <span style={{ color: BRAND.purple }}>UX + performance</span>
           </div>
         </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          {tags.map((t) => (
-            <div
-              key={t}
-              className="rounded-full border border-white/10 bg-[#0A0A0A]/45 px-3 py-1 text-xs text-white/70"
-            >
-              {t}
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-5 text-sm font-semibold text-white/75">
-          Ver como a Eight entrega <span style={{ color: BRAND.purple }}>UX + performance</span>
-        </div>
-      </div>
       </a>
-    </SpotlightCard>
-  );
-}
-
-function TestimonialCard({
-  quote,
-  name,
-  role,
-  company,
-  highlight,
-}: {
-  quote: string;
-  name: string;
-  role: string;
-  company: string;
-  highlight: string;
-}) {
-  return (
-    <SpotlightCard className="p-6" glow="rgba(123,47,255,0.14)">
-      <div className="flex items-start justify-between gap-4">
-        <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#7B2FFF]/15 text-[#7B2FFF]">
-          <BadgeCheck className="h-5 w-5" />
-        </div>
-        <div className="rounded-full border border-white/12 bg-[#0A0A0A]/55 px-3 py-1 text-xs font-semibold text-white/70">
-          {highlight}
-        </div>
-      </div>
-
-      <div className="mt-4 text-sm font-light leading-relaxed text-white/80">
-        “{quote}”
-      </div>
-
-      <div className="mt-5 flex items-center justify-between gap-3">
-        <div>
-          <div className="text-sm font-semibold text-white/85">{name}</div>
-          <div className="mt-0.5 text-xs text-white/60">
-            {role} · {company}
-          </div>
-        </div>
-        <div className="h-10 w-10 rounded-xl border border-white/10 bg-white/5" />
-      </div>
-    </SpotlightCard>
-  );
-}
-
-function StepCard({
-  number,
-  title,
-  desc,
-  icon,
-}: {
-  number: string;
-  title: string;
-  desc: string;
-  icon: React.ReactNode;
-}) {
-  return (
-    <SpotlightCard className="p-6" glow="rgba(123,47,255,0.16)">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="text-xs font-semibold text-white/55">{number}</div>
-          <div className="mt-2 font-display text-lg font-extrabold tracking-tight">
-            {title}
-          </div>
-        </div>
-        <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#7B2FFF]/15 text-[#7B2FFF]">
-          {icon}
-        </div>
-      </div>
-
-      <div className="mt-3 text-sm font-light leading-relaxed text-white/70">
-        {desc}
-      </div>
     </SpotlightCard>
   );
 }
