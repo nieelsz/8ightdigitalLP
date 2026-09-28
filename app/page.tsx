@@ -1,38 +1,27 @@
 "use client";
 
 import Image from "next/image";
-import {
-  motion,
-  useMotionTemplate,
-  useMotionValue,
-  useSpring,
-  useTransform,
-  useReducedMotion,
-} from "framer-motion";
+import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-motion";
 import type React from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
-  BadgeCheck,
-  Check,
+  ArrowUpRight,
+  ChevronLeft,
   ChevronRight,
   Code2,
+  Instagram,
   Layers,
+  Mail,
+  MessageCircle,
+  Pause,
+  Play,
+  Plus,
   ShieldCheck,
   ShoppingBag,
-  Sparkles,
   Wand2,
   Zap,
-  Instagram,
-  MessageCircle,
-  Mail,
 } from "lucide-react";
-
-const BRAND = {
-  black: "#0A0A0A",
-  purple: "#7B2FFF",
-  white: "#F5F5F5",
-};
 
 const WHATSAPP_HREF =
   "https://wa.me/5585987495079?text=" +
@@ -40,1407 +29,1009 @@ const WHATSAPP_HREF =
     "Olá! Vim pelo site da Eight Digital.\n\nQuero:\n1) (LP / Site / E-commerce / Sistema)\n2) Prazo ideal:\n3) Link do que você quer como referência:\n4) O que precisa acontecer pra valer a pena:"
   );
 
+const EMAIL = "contato@8ightdigital.com.br";
+
+const NAV = [
+  { id: "servicos", label: "Serviços" },
+  { id: "portfolio", label: "Portfólio" },
+  { id: "processo", label: "Processo" },
+  { id: "sobre", label: "Sobre" },
+  { id: "faq", label: "FAQ" },
+];
+
 type Project = {
   title: string;
   subtitle: string;
   imageSrc?: string;
+  // Logo: mostrada inteira e centralizada sobre a cor de fundo dela, em vez de preencher o quadro.
+  logo?: { bg: string; size: "sm" | "lg" };
+  // Ponto focal da foto no recorte 16:10 (padrão: rosto/topo, "center 22%").
+  imagePosition?: string;
   tags: string[];
-  href?: string;
+  href: string;
 };
 
 const PROJECTS: Project[] = [
   {
-    title: "Ecommerce Loja Befa",
-    subtitle: "E-commerce com foco em conversão",
-    imageSrc: "/projects/befa2.jpeg",
-    tags: ["E-commerce", "UI premium", "Performance"],
-    href: "https://befamodafeminina.lojavirtualnuvem.com.br",
-  },
-  {
     title: "Kid+",
     subtitle: "Sistema para gestão de brinquedotecas",
-    imageSrc: "/projects/kid-dashboard.png",
+    imageSrc: "/projects/kid-plus.png",
     tags: ["Sistema", "Check-in", "LGPD"],
     href: "https://kid.devmais.com",
   },
   {
-    title: "Moura & Alves Advogados",
-    subtitle: "Site institucional para escritório de advocacia",
-    tags: ["Institucional", "Credibilidade", "Editorial"],
-    href: "https://mouraalves.8ightdigital.com.br/",
-  },
-  {
-    title: "Dra. Isabela Rocha",
-    subtitle: "Landing page editorial com foco em consultas e programa online",
-    tags: ["Landing page", "Saúde", "Instagram"],
-    href: "https://draisabelarocha.8ightdigital.com.br/",
-  },
-  {
-    title: "Viva Clínica",
-    subtitle: "Clínica de nutrição + psicologia",
-    tags: ["Institucional", "Conteúdo", "Conversão"],
-    href: "https://vivaclinica.8ightdigital.com.br/",
+    title: "Loja Befa",
+    subtitle: "E-commerce com foco em conversão",
+    imageSrc: "/projects/befa-logo.webp",
+    logo: { bg: "#FACCCE", size: "sm" },
+    tags: ["E-commerce", "Performance"],
+    href: "https://befamodafeminina.lojavirtualnuvem.com.br",
   },
   {
     title: "Framex Pro",
     subtitle: "IA para imagens profissionais de produto",
     imageSrc: "/projects/Gemini_Generated_Image_wyua19wyua19wyua.webp",
-    tags: ["IA", "Imagens de produto", "Conversão"],
+    tags: ["IA", "Produto"],
     href: "https://framex.8ightdigital.com.br",
   },
   {
+    title: "Moura & Alves Advogados",
+    subtitle: "Site institucional para escritório de advocacia",
+    imageSrc: "/projects/moura-alves.png",
+    imagePosition: "center",
+    tags: ["Institucional", "Editorial"],
+    href: "https://mouraalves.8ightdigital.com.br/",
+  },
+  {
+    title: "Dra. Isabela Rocha",
+    subtitle: "Landing page para consultas e programa online",
+    imageSrc: "/projects/dra-isabela.png",
+    tags: ["Landing page", "Saúde"],
+    href: "https://draisabelarocha.8ightdigital.com.br/",
+  },
+  {
+    title: "Viva Clínica",
+    subtitle: "Clínica de nutrição e psicologia",
+    imageSrc: "/projects/viva-clinica.png",
+    logo: { bg: "#F2F2F2", size: "lg" },
+    tags: ["Institucional", "Conversão"],
+    href: "https://vivaclinica.8ightdigital.com.br/",
+  },
+  {
     title: "Alisson Marques",
-    subtitle: "Identidades visuais, eventos e cardápios que vendem",
+    subtitle: "Identidades visuais, eventos e cardápios",
     imageSrc: "/projects/IMG_20251221_181117_894-dZoaVm2OGvmwDzPmc9lYOKK67vsIDK.webp",
-    tags: ["Design", "Identidade visual", "Social"],
+    tags: ["Design", "Identidade visual"],
     href: "https://alisson.8ightdigital.com.br",
   },
 ];
 
-const TESTIMONIALS = [
+const SERVICES = [
   {
-    quote:
-      "A landing parou de parecer “site de agência” e virou página de produto. A conversão subiu e o WhatsApp começou a chegar com mensagem pronta — sem curiosos.",
-    name: "Camila Rocha",
-    role: "Head de Marketing",
-    company: "NuvemFit",
-    highlight: "+41% leads",
+    icon: Zap,
+    title: "Landing Page",
+    desc: "Copy, hierarquia e velocidade pensadas para converter tráfego em conversa.",
+    meta: "7–14 dias",
   },
   {
-    quote:
-      "O e-commerce ficou rápido e confiável no mobile. Carrinho e checkout sem travar, com layout que passa autoridade. Diminuiu abandono e aumentou ticket.",
-    name: "Rafael Menezes",
-    role: "Sócio",
-    company: "Vértice Store",
-    highlight: "-23% abandono",
+    icon: Layers,
+    title: "Site Institucional",
+    desc: "Narrativa clara e credibilidade para marcas que querem parecer do tamanho que são.",
+    meta: "2–4 semanas",
   },
   {
-    quote:
-      "O sistema que a gente tinha era instável e caro de mexer. Agora ficou previsível: telas claras, dados consistentes e uma base que dá para evoluir sem dor.",
-    name: "Marina Albuquerque",
-    role: "Operações",
-    company: "Atlas Serviços",
-    highlight: "Base escalável",
+    icon: ShoppingBag,
+    title: "E-commerce",
+    desc: "Checkout fluido, catálogo rápido no mobile e métricas configuradas desde o dia um.",
+    meta: "2–4 semanas",
   },
   {
-    quote:
-      "O processo é objetivo: briefing certo, design com hierarquia e entrega rápida. Sem reunião infinita. O que prometeram, entregaram — com refinamento.",
-    name: "Diego Vasconcelos",
-    role: "Founder",
-    company: "Polar Tech",
-    highlight: "Entrega rápida",
+    icon: Code2,
+    title: "Sistema Web",
+    desc: "Regras de negócio, dashboards e uma base de código estável para evoluir sem dor.",
+    meta: "Sob escopo",
   },
-] as const;
+];
+
+const STEPS = [
+  { title: "Briefing", desc: "Objetivo, oferta e critério de sucesso. Uma conversa, sem reunião infinita." },
+  { title: "Design", desc: "Hierarquia, prova e CTA. Cada bloco existe por um motivo." },
+  { title: "Desenvolvimento", desc: "Performance, acessibilidade e código que dá para evoluir." },
+  { title: "Lançamento", desc: "Publica, mede e ajusta. Sem lock-in e com 30 dias de garantia." },
+];
 
 const FAQ_ITEMS = [
   {
     q: "Qual é o prazo típico?",
-    a: "LP em 7–14 dias; e-commerce ou site institucional em 2–4 semanas; sistemas variam conforme escopo.",
+    a: "Landing pages em 7–14 dias; e-commerce ou site institucional em 2–4 semanas. Sistemas variam conforme o escopo.",
   },
   {
     q: "O que preciso para começar?",
-    a: "Oferta, referência visual e acesso (domínio/servidor se já tiver). Se não tiver, ajudamos a decidir.",
+    a: "Sua oferta, uma referência visual e acessos (domínio/servidor, se já tiver). Se não tiver, ajudamos a decidir.",
   },
   {
-    q: "Vocês também fazem copy?",
-    a: "Sim. Refinamos a mensagem com foco em dor, prova e CTA — sem texto genérico.",
+    q: "Vocês também escrevem os textos?",
+    a: "Sim. Refinamos a mensagem com foco em dor, prova e chamada para ação — nada de texto genérico.",
   },
   {
-    q: "E se algo quebrar depois?",
-    a: "Garantia anti-risco: 30 dias contra bugs pós-entrega. Corrigimos sem custo.",
+    q: "E se algo quebrar depois da entrega?",
+    a: "Qualquer bug técnico nos primeiros 30 dias é corrigido sem custo.",
   },
   {
-    q: "Hospedagem e manutenção?",
-    a: "Podemos indicar provedores e oferecer manutenção opcional, sem lock-in.",
+    q: "Vocês cuidam de hospedagem e manutenção?",
+    a: "Indicamos provedores e oferecemos manutenção opcional, sem prender você a nada.",
   },
-] as const;
-function SpotlightCard({
+];
+
+/* ---------- Primitivos ---------- */
+
+function EightMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 38 40" className={className} aria-hidden="true" fill="currentColor">
+      <path d="M6 2h26.5c2.4 0 3.6 2.7 2.1 4.6l-2.7 3.5A6 6 0 0 1 27.2 12.5H2V6a4 4 0 0 1 4-4Z" />
+      <path d="M6 16h17.5c2.4 0 3.6 2.7 2.1 4.6l-1.7 2.2a6 6 0 0 1-4.7 2.2H6a4 4 0 0 1-4-4v-1a4 4 0 0 1 4-4Z" />
+      <path d="M2 28.5h25.2a6 6 0 0 1 4.7 2.3l2.7 3.6c1.5 1.9.3 4.6-2.1 4.6H8a6 6 0 0 1-6-6Z" />
+    </svg>
+  );
+}
+
+function Logo({ inverted = false }: { inverted?: boolean }) {
+  return (
+    <span className="inline-flex items-center gap-[3px] font-display text-[22px] font-bold leading-none tracking-tight">
+      <EightMark className={`h-[17px] w-auto ${inverted ? "text-white" : "text-violet"}`} />
+      <span className={inverted ? "text-white" : "text-onyx"}>IGHT</span>
+    </span>
+  );
+}
+
+function Reveal({
   children,
+  delay = 0,
   className,
-  glow = "rgba(123,47,255,0.22)",
+  as = "div",
 }: {
   children: React.ReactNode;
+  delay?: number;
   className?: string;
-  glow?: string;
+  as?: "div" | "li";
 }) {
   const reduceMotion = useReducedMotion();
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  const background = useMotionTemplate`radial-gradient(560px circle at ${mouseX}px ${mouseY}px, ${glow}, transparent 55%)`;
-
+  const Comp = as === "li" ? motion.li : motion.div;
   return (
-    <motion.div
-      onMouseMove={(event) => {
-        if (reduceMotion) return;
-        const bounds = event.currentTarget.getBoundingClientRect();
-        mouseX.set(event.clientX - bounds.left);
-        mouseY.set(event.clientY - bounds.top);
-      }}
-      onMouseLeave={() => {
-        if (reduceMotion) return;
-        mouseX.set(0);
-        mouseY.set(0);
-      }}
-      className={[
-        "group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-[0_0_0_1px_rgba(255,255,255,0.05)_inset] transition-all duration-200 hover:-translate-y-1 hover:border-white/15 hover:bg-white/[0.07]",
-        className ?? "",
-      ].join(" ")}
+    <Comp
+      className={className}
+      initial={{ opacity: 0, y: 14 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={reduceMotion ? { duration: 0 } : { duration: 0.45, delay, ease: [0.21, 1, 0.32, 1] }}
     >
-      <motion.div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-        style={reduceMotion ? undefined : { background }}
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-60"
-        style={{
-          backgroundImage:
-            "linear-gradient(to bottom, rgba(245,245,245,0.06), transparent 38%)",
-        }}
-      />
-      <div className="relative">{children}</div>
-    </motion.div>
+      {children}
+    </Comp>
   );
 }
 
 function Section({
   id,
+  tone = "white",
   children,
-  className,
 }: {
   id?: string;
+  tone?: "white" | "gelo" | "deep";
   children: React.ReactNode;
-  className?: string;
 }) {
+  const tones = {
+    white: "bg-white text-onyx",
+    gelo: "bg-gelo text-onyx",
+    deep: "bg-deep text-white",
+  };
   return (
-    <section
-      id={id}
-      className={[
-        "relative w-full scroll-mt-24 py-16 sm:py-20",
-        className ?? "",
-      ].join(" ")}
-    >
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">{children}</div>
+    <section id={id} className={`scroll-mt-16 py-24 sm:py-32 ${tones[tone]}`}>
+      <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">{children}</div>
     </section>
   );
 }
 
-function Pill({
-  icon,
-  children,
-}: {
-  icon: React.ReactNode;
-  children: React.ReactNode;
-}) {
+function Eyebrow({ children, inverted = false }: { children: React.ReactNode; inverted?: boolean }) {
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-normal text-white/80 backdrop-blur">
-      <span className="text-white/70">{icon}</span>
-      <span>{children}</span>
-    </div>
+    <p
+      className={`text-sm font-semibold uppercase tracking-[0.14em] ${
+        inverted ? "text-white/70" : "text-violet"
+      }`}
+    >
+      {children}
+    </p>
   );
 }
+
+function Heading({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <h2
+      className={`mt-4 max-w-3xl font-display text-3xl font-semibold tracking-tight sm:text-5xl sm:leading-[1.08] ${
+        className ?? ""
+      }`}
+    >
+      {children}
+    </h2>
+  );
+}
+
+const focusRing =
+  "focus:outline-none focus-visible:ring-2 focus-visible:ring-violet focus-visible:ring-offset-2";
 
 function PrimaryButton({
   href,
   children,
+  inverted = false,
 }: {
   href: string;
   children: React.ReactNode;
+  inverted?: boolean;
 }) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noreferrer"
-      className="group inline-flex items-center justify-center gap-2 rounded-xl bg-[#7B2FFF] px-5 py-3 text-sm font-medium text-white shadow-[0_18px_60px_rgba(123,47,255,0.25)] transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7B2FFF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0A0A]"
+      className={`group inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 text-[15px] font-semibold transition-colors duration-200 ${focusRing} ${
+        inverted
+          ? "bg-white text-violet hover:bg-gelo focus-visible:ring-white focus-visible:ring-offset-violet"
+          : "bg-violet text-white hover:bg-deep"
+      }`}
     >
-      <span>{children}</span>
+      {children}
       <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
     </a>
   );
 }
 
-function SecondaryButton({
-  href,
-  children,
-}: {
-  href: string;
-  children: React.ReactNode;
-}) {
+/* ---------- Página ---------- */
+
+export default function Page() {
   return (
-    <a
-      href={href}
-      className="group inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-medium text-white/90 backdrop-blur transition-all duration-200 hover:border-white/25 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0A0A]"
-    >
-      <span>{children}</span>
-      <ChevronRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-    </a>
+    <div className="min-h-screen bg-white">
+      <a
+        href="#conteudo"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-violet focus:px-4 focus:py-2 focus:text-white"
+      >
+        Pular para o conteúdo
+      </a>
+
+      <Header />
+
+      <main id="conteudo">
+        <Hero />
+        <Services />
+        <Portfolio />
+        <Process />
+        <About />
+        <Faq />
+        <FinalCta />
+      </main>
+
+      <Footer />
+    </div>
   );
 }
 
-export default function Page() {
-  const reduceMotion = useReducedMotion();
-  const [activeNav, setActiveNav] = useState<string | null>(null);
-  const [isPortfolioPaused, setIsPortfolioPaused] = useState(false);
-  const portfolioRef = useRef<HTMLDivElement | null>(null);
-  const portfolioRafRef = useRef<number | null>(null);
-  const portfolioLastTsRef = useRef<number | null>(null);
-  const portfolioResumeTimeoutRef = useRef<number | null>(null);
-  const portfolioDragRef = useRef<{
-    active: boolean;
-    pointerId: number;
-    startX: number;
-    startScrollLeft: number;
-  } | null>(null);
+function Header() {
+  return (
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-onyx/[0.06] bg-white/90 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-5 sm:px-8">
+        <a href="#" aria-label="Eight Digital — início" className={`rounded-md ${focusRing}`}>
+          <Logo />
+        </a>
 
-  const navItems = useMemo(
-    () => [
-      { id: "servicos", label: "Serviços" },
-      { id: "portfolio", label: "Portfólio" },
-      { id: "processo", label: "Como trabalhamos" },
-    ],
-    []
+        <nav aria-label="Principal" className="hidden items-center gap-8 md:flex">
+          {NAV.map((n) => (
+            <a
+              key={n.id}
+              href={`#${n.id}`}
+              className={`rounded-md text-sm font-medium text-onyx/65 transition-colors hover:text-onyx ${focusRing}`}
+            >
+              {n.label}
+            </a>
+          ))}
+        </nav>
+
+        <a
+          href={WHATSAPP_HREF}
+          target="_blank"
+          rel="noreferrer"
+          className={`inline-flex h-10 items-center rounded-full bg-onyx px-5 text-sm font-semibold text-white transition-colors hover:bg-violet ${focusRing}`}
+        >
+          Fale conosco
+        </a>
+      </div>
+    </header>
   );
+}
 
-  const portfolioItems = useMemo(() => {
-    if (!PROJECTS.length) return [] as Project[];
-    return [...PROJECTS, ...PROJECTS];
-  }, []);
-
-  useEffect(() => {
-    const elements = navItems
-      .map((item) => document.getElementById(item.id))
-      .filter((el): el is HTMLElement => Boolean(el));
-
-    if (!elements.length) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort(
-            (a, b) =>
-              (b.intersectionRatio ?? 0) - (a.intersectionRatio ?? 0)
-          )[0];
-        if (!visible?.target) return;
-        setActiveNav(visible.target.id);
-      },
-      { root: null, threshold: [0.2, 0.35, 0.5], rootMargin: "-30% 0px -60% 0px" }
-    );
-
-    elements.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, [navItems]);
-
-  useEffect(() => {
-    const id = window.requestAnimationFrame(() => {
-      const el = portfolioRef.current;
-      if (!el) return;
-      if (PROJECTS.length <= 1) return;
-      const half = el.scrollWidth / 2;
-      const max = el.scrollWidth - el.clientWidth;
-      if (half > 0 && max > 0) el.scrollLeft = Math.min(half, max);
-    });
-    return () => window.cancelAnimationFrame(id);
-  }, []);
-
-  useEffect(() => {
-    if (reduceMotion) return;
-    if (isPortfolioPaused) return;
-    const el = portfolioRef.current;
-    if (!el) return;
-    if (PROJECTS.length <= 1) return;
-
-    if (portfolioRafRef.current != null) {
-      window.cancelAnimationFrame(portfolioRafRef.current);
-      portfolioRafRef.current = null;
-    }
-    portfolioLastTsRef.current = null;
-
-    const speedPxPerSecond = 28;
-
-    const loop = (ts: number) => {
-      const target = portfolioRef.current;
-      if (!target) return;
-
-      const last = portfolioLastTsRef.current;
-      portfolioLastTsRef.current = ts;
-
-      if (last != null) {
-        const delta = ts - last;
-        const half = target.scrollWidth / 2;
-        const max = target.scrollWidth - target.clientWidth;
-
-        if (half > 0 && max > 0) {
-          if (target.scrollLeft <= 0) target.scrollLeft += half;
-          else if (target.scrollLeft >= max) target.scrollLeft -= half;
-        }
-
-        target.scrollLeft += (speedPxPerSecond * delta) / 1000;
-      }
-
-      portfolioRafRef.current = window.requestAnimationFrame(loop);
-    };
-
-    portfolioRafRef.current = window.requestAnimationFrame(loop);
-    return () => {
-      if (portfolioRafRef.current != null) {
-        window.cancelAnimationFrame(portfolioRafRef.current);
-        portfolioRafRef.current = null;
-      }
-      portfolioLastTsRef.current = null;
-    };
-  }, [reduceMotion, isPortfolioPaused]);
-
-  const heroX = useMotionValue(0);
-  const heroY = useMotionValue(0);
-  const heroXSpring = useSpring(heroX, {
-    stiffness: 90,
-    damping: 20,
-    mass: 0.35,
+function Hero() {
+  const reduceMotion = useReducedMotion();
+  // Sempre anima (o SSR já sai com opacity 0); com reduced motion a transição é instantânea.
+  const fade = (delay: number, y = 16, duration = 0.6) => ({
+    initial: { opacity: 0, y },
+    animate: { opacity: 1, y: 0 },
+    transition: reduceMotion
+      ? { duration: 0 }
+      : { duration, delay, ease: [0.21, 1, 0.32, 1] as const },
   });
-  const heroYSpring = useSpring(heroY, {
-    stiffness: 90,
-    damping: 20,
-    mass: 0.35,
-  });
-  const heroCardX = useTransform(heroXSpring, [-0.5, 0.5], [-10, 10]);
-  const heroCardY = useTransform(heroYSpring, [-0.5, 0.5], [-8, 8]);
-  const heroCardRotate = useTransform(heroXSpring, [-0.5, 0.5], [-1.25, 1.25]);
-  const blobX = useTransform(heroXSpring, [-0.5, 0.5], [-14, 14]);
-  const blobY = useTransform(heroYSpring, [-0.5, 0.5], [-12, 12]);
-  const blobXInv = useTransform(blobX, (v) => -v);
-  const blobYInv = useTransform(blobY, (v) => -v);
-
-  const section = {
-    hidden: { opacity: 0, y: 18, filter: "blur(8px)" },
-    show: {
-      opacity: 1,
-      y: 0,
-      filter: "blur(0px)",
-      transition: reduceMotion
-        ? { duration: 0 }
-        : { duration: 0.55, ease: [0.21, 1, 0.32, 1] as const },
-    },
-  };
-
-  const container = {
-    hidden: {},
-    show: {
-      transition: reduceMotion ? {} : { staggerChildren: 0.08, delayChildren: 0.04 },
-    },
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 16, filter: "blur(10px)" },
-    show: {
-      opacity: 1,
-      y: 0,
-      filter: "blur(0px)",
-      transition: reduceMotion
-        ? { duration: 0 }
-        : { duration: 0.5, ease: [0.21, 1, 0.32, 1] as const },
-    },
-  };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-[#F5F5F5]">
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#0A0A0A]/70 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-          <a href="#" className="group inline-flex items-center gap-3">
-            <div className="relative grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/5 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset] transition-transform duration-200 group-hover:-translate-y-0.5">
-              <Image
-                src="/projects/favicon.svg"
-                alt="Eight Digital"
-                width={22}
-                height={22}
-                priority
-              />
-            </div>
-            <div className="leading-tight">
-              <div className="font-display text-sm font-extrabold tracking-tight">
-                Eight Digital
-              </div>
-              <div className="text-xs text-white/60">Desenvolvimento web</div>
-            </div>
+    <section className="relative overflow-hidden bg-white pt-36 sm:pt-44">
+      {/* brilho sutil da marca, sem ruído visual */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-0 h-[640px] bg-[radial-gradient(50%_60%_at_50%_0%,rgba(112,0,255,0.10),transparent_70%)]"
+      />
+
+      <div className="relative mx-auto w-full max-w-6xl px-5 text-center sm:px-8">
+        <motion.p {...fade(0)} className="text-sm font-semibold uppercase tracking-[0.14em] text-violet">
+          Soluções Digitais
+        </motion.p>
+
+        <motion.h1
+          {...fade(0.05)}
+          className="mx-auto mt-6 max-w-4xl font-display text-[2.35rem] font-semibold leading-[1.05] tracking-tight text-onyx sm:text-7xl"
+        >
+          Não criamos apenas websites.{" "}
+          <span className="text-violet">Construímos estruturas digitais.</span>
+        </motion.h1>
+
+        <motion.p
+          {...fade(0.12)}
+          className="mx-auto mt-7 max-w-2xl text-lg leading-relaxed text-onyx/65 sm:text-xl"
+        >
+          Landing pages, e-commerces e sistemas que transformam negócios em marcas
+          premium — rápidos, estáveis e feitos para vender.
+        </motion.p>
+
+        <motion.div
+          {...fade(0.18)}
+          className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row"
+        >
+          <PrimaryButton href={WHATSAPP_HREF}>Pedir orçamento</PrimaryButton>
+          <a
+            href="#portfolio"
+            className={`inline-flex h-12 items-center gap-1.5 rounded-full px-6 text-[15px] font-semibold text-onyx transition-colors hover:text-violet ${focusRing}`}
+          >
+            Ver projetos <ArrowRight className="h-4 w-4" />
           </a>
+        </motion.div>
 
-          <nav className="hidden items-center gap-2 text-sm text-white/70 md:flex">
-            {navItems.map((nav) => {
-              const href = `#${nav.id}`;
-              const isActive = activeNav === nav.id;
-              return (
-                <a
-                  key={nav.id}
-                  href={href}
-                  onClick={() => setActiveNav(nav.id)}
-                  className="group relative rounded-lg px-3 py-2 font-medium text-white/70 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/25"
-                >
-                  <span className="relative z-10">{nav.label}</span>
-                  {isActive ? (
-                    <motion.span
-                      layoutId="nav-underline"
-                      transition={{
-                        type: "spring",
-                        stiffness: 520,
-                        damping: 34,
-                        mass: 0.7,
-                      }}
-                      className="absolute inset-x-2 bottom-1 h-[2px] rounded-full bg-[#7B2FFF]"
-                    />
-                  ) : (
-                    <span className="absolute inset-x-2 bottom-1 h-[2px] rounded-full bg-white/0 transition-colors duration-200 group-hover:bg-white/15" />
-                  )}
-                </a>
-              );
-            })}
-          </nav>
+        <SolutionsVisual fade={fade} />
+      </div>
 
+      <div className="relative border-t border-onyx/[0.06] bg-white">
+        <dl className="mx-auto grid w-full max-w-6xl grid-cols-3 divide-x divide-onyx/[0.06] px-5 sm:px-8">
+          {[
+            { v: "30+", l: "projetos entregues" },
+            { v: "12+", l: "sistemas em produção" },
+            { v: "7–21d", l: "prazo médio" },
+          ].map((s) => (
+            <div key={s.l} className="px-2 py-8 text-center sm:py-10">
+              <dt className="sr-only">{s.l}</dt>
+              <dd className="font-display text-2xl font-semibold tracking-tight text-onyx sm:text-4xl">
+                {s.v}
+              </dd>
+              <dd className="mt-1 text-xs text-onyx/55 sm:text-sm">{s.l}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
+  );
+}
+
+type Fade = (
+  delay: number,
+  y?: number,
+  duration?: number
+) => React.ComponentProps<typeof motion.div>;
+
+function SolutionTag({ icon: Icon, children }: { icon: typeof Zap; children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-onyx/[0.08] bg-white px-3 py-1.5 text-xs font-semibold text-onyx shadow-[0_8px_24px_-12px_rgba(70,30,126,0.35)]">
+      <Icon className="h-3.5 w-3.5 text-violet" aria-hidden="true" />
+      {children}
+    </span>
+  );
+}
+
+// Composição ilustrativa: site + loja + sistema + IA — as soluções digitais da Eight numa cena só.
+function SolutionsVisual({ fade }: { fade: Fade }) {
+  return (
+    <div
+      role="img"
+      aria-label="Ilustração das soluções digitais da Eight: site, loja virtual, sistema web e IA"
+      className="relative mx-auto mt-16 h-[360px] max-w-5xl overflow-hidden rounded-t-[28px] border border-b-0 border-onyx/[0.06] bg-gelo sm:mt-20 sm:h-[500px]"
+    >
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-[radial-gradient(60%_70%_at_50%_100%,rgba(112,0,255,0.16),transparent_70%)]"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 opacity-60 [background-image:radial-gradient(rgba(18,18,18,0.08)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]"
+      />
+
+      {/* Site / landing page */}
+      <motion.div
+        {...fade(0.3, 40, 0.9)}
+        className="absolute inset-x-[9%] bottom-0 top-12 sm:inset-x-[20%] sm:top-14"
+      >
+        <div className="absolute -top-4 left-6 z-10">
+          <SolutionTag icon={Zap}>Sites & Landing Pages</SolutionTag>
+        </div>
+        <div className="h-full overflow-hidden rounded-t-2xl border border-b-0 border-onyx/10 bg-white shadow-[0_40px_100px_-40px_rgba(70,30,126,0.5)]">
+          <div className="flex h-9 items-center gap-1.5 border-b border-onyx/[0.06] px-4">
+            <span className="h-2 w-2 rounded-full bg-onyx/15" />
+            <span className="h-2 w-2 rounded-full bg-onyx/15" />
+            <span className="h-2 w-2 rounded-full bg-onyx/15" />
+            <span className="ml-3 hidden rounded-md bg-gelo px-3 py-0.5 text-[11px] text-onyx/40 sm:block">
+              suamarca.com.br
+            </span>
+          </div>
+          <div className="px-6 pt-5 sm:px-8">
+            <div className="flex items-center justify-between">
+              <EightMark className="h-3.5 w-auto text-violet" />
+              <div className="hidden gap-3 sm:flex">
+                <span className="h-1.5 w-8 rounded-full bg-onyx/10" />
+                <span className="h-1.5 w-8 rounded-full bg-onyx/10" />
+                <span className="h-1.5 w-8 rounded-full bg-onyx/10" />
+              </div>
+              <span className="h-5 w-14 rounded-full bg-onyx" />
+            </div>
+            <div className="mt-8 space-y-2.5 sm:mt-10">
+              <span className="block h-4 w-[72%] rounded-full bg-onyx/85 sm:h-5" />
+              <span className="block h-4 w-[52%] rounded-full bg-violet sm:h-5" />
+              <span className="mt-4 block h-2 w-[64%] rounded-full bg-onyx/10" />
+              <span className="block h-2 w-[48%] rounded-full bg-onyx/10" />
+            </div>
+            <span className="mt-6 block h-7 w-24 rounded-full bg-violet" />
+            <div className="mt-8 grid grid-cols-3 gap-3">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="h-20 rounded-xl bg-gelo p-3 sm:h-24">
+                  <span className="block h-5 w-5 rounded-md bg-violet/15" />
+                  <span className="mt-3 block h-1.5 w-[70%] rounded-full bg-onyx/15" />
+                  <span className="mt-1.5 block h-1.5 w-[50%] rounded-full bg-onyx/10" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* E-commerce no celular */}
+      <motion.div
+        {...fade(0.45, 30, 0.8)}
+        className="absolute bottom-[-72px] left-[3%] w-[128px] sm:bottom-[-24px] sm:left-[6%] sm:w-[186px]"
+      >
+        <div className="absolute -top-4 left-1/2 z-10 -translate-x-1/2">
+          <SolutionTag icon={ShoppingBag}>E-commerce</SolutionTag>
+        </div>
+        <div className="rounded-[26px] bg-onyx p-1.5 shadow-[0_30px_80px_-30px_rgba(18,18,18,0.55)] sm:rounded-[32px] sm:p-2">
+          <div className="overflow-hidden rounded-[21px] bg-white sm:rounded-[25px]">
+            <div className="grid aspect-square place-items-center bg-[linear-gradient(145deg,#7000FF_0%,#461E7E_100%)]">
+              <ShoppingBag className="h-9 w-9 text-white/90 sm:h-12 sm:w-12" strokeWidth={1.5} aria-hidden="true" />
+            </div>
+            <div className="p-3 sm:p-4">
+              <span className="block h-2 w-[80%] rounded-full bg-onyx/80" />
+              <span className="mt-1.5 block h-1.5 w-[55%] rounded-full bg-onyx/15" />
+              <p className="mt-3 font-display text-sm font-semibold text-onyx sm:text-base">R$ 189,90</p>
+              <span className="mt-3 flex h-7 items-center justify-center rounded-full bg-violet text-[10px] font-semibold text-white sm:h-8 sm:text-xs">
+                Comprar
+              </span>
+              <span className="mt-2 block h-12 sm:h-16" />
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Sistema / dashboard */}
+      <motion.div
+        {...fade(0.6, 30, 0.8)}
+        className="absolute right-[5%] top-[38%] hidden w-[230px] sm:block lg:w-[250px]"
+      >
+        <div className="absolute -top-4 left-5 z-10">
+          <SolutionTag icon={Code2}>Sistemas Web</SolutionTag>
+        </div>
+        <div className="rounded-2xl border border-onyx/[0.08] bg-white p-5 pt-6 shadow-[0_30px_80px_-30px_rgba(70,30,126,0.5)]">
+          <div className="flex items-center justify-between">
+            <span className="h-2 w-20 rounded-full bg-onyx/70" />
+            <span className="h-4 w-10 rounded-full bg-violet/10" />
+          </div>
+          <div className="mt-5 flex h-24 items-end gap-2">
+            {[38, 56, 44, 70, 62, 88, 100].map((h, i) => (
+              <span
+                key={i}
+                className={`flex-1 rounded-t-md ${i === 6 ? "bg-violet" : "bg-violet/20"}`}
+                style={{ height: `${h}%` }}
+              />
+            ))}
+          </div>
+          <div className="mt-4 space-y-2 border-t border-onyx/[0.06] pt-4">
+            {[0, 1].map((i) => (
+              <div key={i} className="flex items-center gap-2">
+                <span className="h-5 w-5 rounded-full bg-gelo" />
+                <span className="h-1.5 flex-1 rounded-full bg-onyx/10" />
+                <span className="h-1.5 w-8 rounded-full bg-onyx/20" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+
+      {/* IA aplicada */}
+      <motion.div
+        {...fade(0.75, 20, 0.7)}
+        className="absolute right-[8%] top-12 hidden sm:block"
+      >
+        <SolutionTag icon={Wand2}>IA aplicada</SolutionTag>
+      </motion.div>
+    </div>
+  );
+}
+
+function Services() {
+  return (
+    <Section id="servicos" tone="deep">
+      <Reveal>
+        <Eyebrow inverted>Serviços</Eyebrow>
+        <Heading>Tudo o que a sua marca precisa para crescer no digital.</Heading>
+      </Reveal>
+
+      <div className="mt-16 grid gap-px overflow-hidden rounded-2xl bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
+        {SERVICES.map((s, i) => (
+          <Reveal key={s.title} delay={i * 0.06} className="bg-deep">
+            <div className="flex h-full flex-col p-7 sm:p-8">
+              <s.icon className="h-6 w-6 text-white" strokeWidth={1.75} aria-hidden="true" />
+              <h3 className="mt-8 font-display text-xl font-semibold">{s.title}</h3>
+              <p className="mt-3 flex-1 text-[15px] leading-relaxed text-white/70">{s.desc}</p>
+              <p className="mt-8 text-sm font-medium text-white/50">{s.meta}</p>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+
+      <Reveal className="mt-6">
+        <div className="flex flex-col gap-4 rounded-2xl border border-white/10 p-7 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+          <div className="flex items-start gap-4">
+            <Wand2 className="mt-0.5 h-6 w-6 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+            <div>
+              <h3 className="font-display text-lg font-semibold">IA aplicada em imagens</h3>
+              <p className="mt-1 text-[15px] text-white/70">
+                Modelos virtuais e catálogo com cara de marca grande. Disponível como adicional.
+              </p>
+            </div>
+          </div>
           <a
             href={WHATSAPP_HREF}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-[#0A0A0A] transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full text-sm font-semibold text-white hover:text-white/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
           >
-            WhatsApp
+            Saber mais <ArrowRight className="h-4 w-4" />
           </a>
         </div>
-      </header>
+      </Reveal>
+    </Section>
+  );
+}
 
-      <main className="pt-20">
-        <section
-          className="relative overflow-hidden"
-          onMouseMove={(event) => {
-            if (reduceMotion) return;
-            const bounds = event.currentTarget.getBoundingClientRect();
-            const x = (event.clientX - bounds.left) / bounds.width - 0.5;
-            const y = (event.clientY - bounds.top) / bounds.height - 0.5;
-            heroX.set(x);
-            heroY.set(y);
-          }}
-          onMouseLeave={() => {
-            if (reduceMotion) return;
-            heroX.set(0);
-            heroY.set(0);
+const SLIDE_MS = 6000;
+
+// useReducedMotion devolve null no servidor e o valor real já no 1º render do cliente;
+// quando isso muda o markup (botão de pausa, drag), a hidratação quebra. Só confia após montar.
+function useHydratedReducedMotion() {
+  const reduceMotion = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  return mounted && Boolean(reduceMotion);
+}
+
+function Portfolio() {
+  const reduceMotion = useHydratedReducedMotion();
+  const [index, setIndex] = useState(0);
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [manualPause, setManualPause] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(rootRef, { amount: 0.35 });
+
+  const total = PROJECTS.length;
+  const autoplay = !reduceMotion;
+  const paused = !autoplay || hovered || focused || manualPause || !inView;
+  const project = PROJECTS[index];
+
+  const go = (i: number) => setIndex((i + total) % total);
+  const next = () => go(index + 1);
+  const prev = () => go(index - 1);
+
+  // Mantém a aba ativa visível quando a lista rola na horizontal (mobile).
+  useEffect(() => {
+    const list = tabsRef.current;
+    const tab = list?.children[index] as HTMLElement | undefined;
+    if (!list || !tab || list.scrollWidth <= list.clientWidth) return;
+    list.scrollTo({
+      left: tab.offsetLeft - list.clientWidth / 2 + tab.clientWidth / 2,
+      behavior: reduceMotion ? "auto" : "smooth",
+    });
+  }, [index, reduceMotion]);
+
+  const iconButton = `grid h-11 w-11 place-items-center rounded-full border border-onyx/10 text-onyx transition-colors hover:border-violet hover:text-violet ${focusRing}`;
+
+  return (
+    <Section id="portfolio">
+      <Reveal className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <Eyebrow>Portfólio</Eyebrow>
+          <Heading>Projetos que falam por nós.</Heading>
+        </div>
+        <div className="flex items-center gap-2">
+          {autoplay && (
+            <button
+              type="button"
+              onClick={() => setManualPause((p) => !p)}
+              aria-label={manualPause ? "Retomar rotação automática" : "Pausar rotação automática"}
+              className={iconButton}
+            >
+              {manualPause ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+            </button>
+          )}
+          <button type="button" onClick={prev} aria-label="Projeto anterior" className={iconButton}>
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button type="button" onClick={next} aria-label="Próximo projeto" className={iconButton}>
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+      </Reveal>
+
+      <Reveal className="mt-14">
+        <div
+          ref={rootRef}
+          role="region"
+          aria-roledescription="carrossel"
+          aria-label="Projetos da Eight Digital"
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          onFocus={() => setFocused(true)}
+          onBlur={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
           }}
         >
-          <div className="pointer-events-none absolute inset-0 -z-10">
-            <div className="absolute inset-0 bg-[#0A0A0A]" />
-            <div
-              className="absolute inset-0 opacity-70"
-              style={{
-                backgroundImage: `
-                  radial-gradient(700px 380px at 20% 10%, rgba(123,47,255,0.35), transparent 60%),
-                  radial-gradient(680px 360px at 80% 20%, rgba(123,47,255,0.20), transparent 55%),
-                  radial-gradient(520px 300px at 60% 85%, rgba(123,47,255,0.18), transparent 60%)
-                `,
-              }}
-            />
-            <div
-              className="absolute inset-0 opacity-[0.12]"
-              style={{
-                backgroundImage: `
-                  linear-gradient(to right, rgba(245,245,245,0.16) 1px, transparent 1px),
-                  linear-gradient(to bottom, rgba(245,245,245,0.14) 1px, transparent 1px)
-                `,
-                backgroundSize: "72px 72px",
-                maskImage:
-                  "radial-gradient(70% 55% at 50% 12%, black 40%, transparent 70%)",
-              }}
-            />
-          </div>
+          <div aria-live={paused ? "polite" : "off"}>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={index}
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`${index + 1} de ${total}: ${project.title}`}
+                initial={reduceMotion ? { opacity: 0 } : { opacity: 0, x: 24 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -24 }}
+                transition={{ duration: reduceMotion ? 0.15 : 0.4, ease: [0.21, 1, 0.32, 1] }}
+                drag={reduceMotion ? false : "x"}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.18}
+                onDragEnd={(_, info) => {
+                  if (info.offset.x < -60) next();
+                  else if (info.offset.x > 60) prev();
+                }}
+                className="grid cursor-grab gap-8 active:cursor-grabbing md:grid-cols-5 md:items-center md:gap-12"
+              >
+                <ProjectVisual project={project} />
 
-          <div className="mx-auto w-full max-w-6xl px-4 pb-12 pt-12 sm:px-6 sm:pb-16 sm:pt-16">
-            <motion.div
-              variants={container}
-              initial="hidden"
-              animate="show"
-              className="grid items-start gap-10 lg:grid-cols-12 lg:gap-12"
-            >
-              <div className="lg:col-span-7">
-                <motion.div variants={item} className="mb-6">
-                  <Pill icon={<Sparkles className="h-4 w-4" />}>
-                    Design premium + engenharia de verdade
-                  </Pill>
-                </motion.div>
-
-                <motion.h1
-                  variants={item}
-                  className="font-display text-4xl font-extrabold tracking-tight text-[#F5F5F5] sm:text-5xl lg:text-6xl"
-                >
-                  Seu site não pode parecer amador.
-                  <span className="block text-white/75">
-                    A gente constrói páginas e sistemas que{" "}
-                    <span className="bg-gradient-to-r from-[#F5F5F5] to-[#7B2FFF] bg-clip-text text-transparent">
-                      vendem
-                    </span>{" "}
-                    e não quebram.
-                  </span>
-                </motion.h1>
-
-                <motion.p
-                  variants={item}
-                  className="mt-5 max-w-2xl text-base font-light leading-relaxed text-white/70 sm:text-lg"
-                >
-                  Se hoje seu tráfego chega e não converte, o problema quase
-                  sempre é o mesmo: layout sem confiança, copy fraca e site
-                  lento. A Eight Digital resolve isso com UX, performance e um
-                  processo que entrega.
-                </motion.p>
-
-                <motion.div
-                  variants={item}
-                  className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center"
-                >
-                  <PrimaryButton href={WHATSAPP_HREF}>
-                    Pedir orçamento no WhatsApp
-                  </PrimaryButton>
-                  <SecondaryButton href="#portfolio">
-                    Ver portfólio
-                  </SecondaryButton>
-                </motion.div>
-
-                <motion.div
-                  variants={item}
-                  className="mt-10 flex flex-wrap gap-2 text-sm text-white/70"
-                >
-                  <Pill icon={<Zap className="h-4 w-4" />}>
-                    Performance e SEO técnico
-                  </Pill>
-                  <Pill icon={<ShieldCheck className="h-4 w-4" />}>
-                    Código estável e sustentável
-                  </Pill>
-                  <Pill icon={<Layers className="h-4 w-4" />}>
-                    UI/UX com padrão premium
-                  </Pill>
-                </motion.div>
-              </div>
-
-              <div className="lg:col-span-5">
-                <motion.div
-                  variants={item}
-                  style={
-                    reduceMotion
-                      ? undefined
-                      : { x: heroCardX, y: heroCardY, rotate: heroCardRotate }
-                  }
-                >
-                  <SpotlightCard className="p-5">
-                    <motion.div
-                      aria-hidden="true"
-                      className="absolute -right-28 -top-28 h-64 w-64 rounded-full bg-[#7B2FFF]/20 blur-3xl"
-                      style={reduceMotion ? undefined : { x: blobX, y: blobY }}
-                    />
-                    <motion.div
-                      aria-hidden="true"
-                      className="absolute -bottom-28 -left-28 h-64 w-64 rounded-full bg-[#7B2FFF]/18 blur-3xl"
-                      style={reduceMotion ? undefined : { x: blobXInv, y: blobYInv }}
-                    />
-
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="space-y-2">
-                        <div className="text-xs font-semibold text-white/60">
-                          Em 10 minutos no WhatsApp você sai com:
-                        </div>
-                        <div className="font-display text-xl font-extrabold tracking-tight">
-                          Um plano de ataque
-                        </div>
-                      </div>
-
-                      <motion.div
-                        animate={
-                          reduceMotion
-                            ? undefined
-                            : {
-                                y: [0, -6, 0],
-                                boxShadow: [
-                                  "0 0 0 rgba(123,47,255,0.0)",
-                                  "0 18px 60px rgba(123,47,255,0.22)",
-                                  "0 0 0 rgba(123,47,255,0.0)",
-                                ],
-                              }
-                        }
-                        transition={
-                          reduceMotion
-                            ? undefined
-                            : {
-                                duration: 2.2,
-                                repeat: Infinity,
-                                ease: "easeInOut",
-                              }
-                        }
-                        className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-[#0A0A0A]/60 px-3 py-1 text-xs text-white/80"
+                <div className="md:col-span-2">
+                  <p className="text-sm font-medium text-onyx/50">
+                    <span className="font-display font-semibold text-violet">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span className="mx-2 text-onyx/20">/</span>
+                    {String(total).padStart(2, "0")}
+                  </p>
+                  <h3 className="mt-4 font-display text-3xl font-semibold tracking-tight text-onyx sm:text-4xl">
+                    {project.title}
+                  </h3>
+                  <p className="mt-3 text-lg leading-relaxed text-onyx/60">{project.subtitle}</p>
+                  <div className="mt-6 flex flex-wrap gap-2">
+                    {project.tags.map((t) => (
+                      <span
+                        key={t}
+                        className="rounded-full bg-gelo px-3 py-1 text-xs font-medium text-onyx/70"
                       >
-                        <BadgeCheck className="h-4 w-4 text-[#7B2FFF]" />
-                        Resposta rápida
-                      </motion.div>
-                    </div>
-
-                    <div className="mt-6 divide-y divide-white/10">
-                      {[
-                        "O que você precisa fazer agora (prioridades).",
-                        "O que cortar (o que não dá retorno).",
-                        "Um escopo enxuto pra lançar e evoluir.",
-                      ].map((t) => (
-                        <div
-                          key={t}
-                          className="flex items-start gap-3 py-4"
-                        >
-                          <div className="mt-0.5 grid h-6 w-6 place-items-center rounded-lg bg-[#7B2FFF]/15 text-[#7B2FFF]">
-                            <CheckIcon />
-                          </div>
-                          <div className="text-sm text-white/75">{t}</div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="mt-6">
-                      <a
-                        href={WHATSAPP_HREF}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="group inline-flex w-full items-center justify-center rounded-xl bg-white px-4 py-3 text-sm font-semibold text-[#0A0A0A] transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0"
-                      >
-                        Chamar agora
-                        <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-                      </a>
-                      <div className="mt-3 text-center text-xs text-white/55">
-                        Sem reunião infinita. Sem proposta genérica.
-                      </div>
-                    </div>
-                  </SpotlightCard>
-                </motion.div>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        <Section className="py-8 sm:py-10">
-          <motion.div
-            variants={section}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, margin: "-80px" }}
-            className="grid gap-3 rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur sm:grid-cols-3 sm:gap-4 sm:p-6"
-          >
-            <Stat
-              label="Projetos entregues"
-              value="30+"
-              hint="LPs, sites e produtos"
-            />
-            <Stat
-              label="Sistemas em produção"
-              value="12+"
-              hint="estáveis e escaláveis"
-            />
-            <Stat
-              label="Prazo médio"
-              value="7–21d"
-              hint="dependendo do escopo"
-            />
-          </motion.div>
-        </Section>
-
-        <Section id="servicos">
-          <motion.div
-            variants={container}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, margin: "-80px" }}
-          >
-            <motion.div variants={item} className="max-w-2xl">
-              <div className="font-display text-2xl font-extrabold tracking-tight sm:text-3xl">
-                Serviços para você vender mais (e não travar depois).
-              </div>
-              <div className="mt-3 text-base font-light leading-relaxed text-white/70">
-                LP, site, e-commerce ou sistema. E quando faz sentido, entra IA
-                aplicada em imagens para deixar o visual com cara de marca
-                grande.
-              </div>
-            </motion.div>
-
-            <motion.div variants={item} className="mt-10">
-              <SpotlightCard className="p-6" glow="rgba(123,47,255,0.12)">
-                <div className="grid gap-5 lg:grid-cols-12 lg:items-start">
-                  <div className="lg:col-span-4">
-                    <div className="font-display text-lg font-extrabold tracking-tight">
-                      Entregas principais
-                    </div>
-                    <div className="mt-2 text-sm font-light leading-relaxed text-white/70">
-                      Menos “pacotes”. Mais clareza do que entra e por quê.
-                    </div>
-                  </div>
-
-                  <div className="grid gap-6 lg:col-span-8 lg:grid-cols-2">
-                    {[
-                      {
-                        title: "Landing Page",
-                        tag: "7–14d",
-                        icon: <Zap className="h-5 w-5" />,
-                        bullets: ["Copy e hierarquia para conversão", "Performance + SEO técnico"],
-                      },
-                      {
-                        title: "Site Institucional",
-                        tag: "Marca forte",
-                        icon: <Layers className="h-5 w-5" />,
-                        bullets: ["Narrativa clara + credibilidade", "Base pronta para evoluir"],
-                      },
-                      {
-                        title: "E-commerce",
-                        tag: "Vender mais",
-                        icon: <ShoppingBag className="h-5 w-5" />,
-                        bullets: ["Checkout fluido + rápido", "Métricas (Pixel/GA4) e eventos"],
-                      },
-                      {
-                        title: "Sistema Web",
-                        tag: "Operação",
-                        icon: <Code2 className="h-5 w-5" />,
-                        bullets: ["Regras de negócio + dashboards", "Código estável e fácil de manter"],
-                      },
-                    ].map((s) => (
-                      <div key={s.title} className="border-l border-white/10 pl-4">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex items-center gap-3">
-                            <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#7B2FFF]/15 text-[#7B2FFF]">
-                              {s.icon}
-                            </div>
-                            <div className="font-display text-base font-extrabold tracking-tight">
-                              {s.title}
-                            </div>
-                          </div>
-                          <div className="rounded-full border border-white/12 bg-[#0A0A0A]/55 px-3 py-1 text-xs font-semibold text-white/70">
-                            {s.tag}
-                          </div>
-                        </div>
-                        <div className="mt-3 space-y-2 text-sm font-light text-white/75">
-                          {s.bullets.map((b) => (
-                            <div key={b} className="flex items-start gap-3">
-                              <span className="mt-0.5 text-[#7B2FFF]">
-                                <Check className="h-4 w-4" />
-                              </span>
-                              <span>{b}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                        {t}
+                      </span>
                     ))}
                   </div>
-                </div>
-
-                <div className="mt-6 border-t border-white/10 pt-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#7B2FFF]/15 text-[#7B2FFF]">
-                        <Wand2 className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <div className="font-display text-base font-extrabold tracking-tight">
-                          IA aplicada em imagens
-                        </div>
-                        <div className="mt-1 text-sm font-light leading-relaxed text-white/70">
-                          Modelos virtuais, remodelagem de comida/roupa e catálogo com cara de marca grande.
-                        </div>
-                      </div>
-                    </div>
-                    <div className="rounded-full border border-white/12 bg-[#0A0A0A]/55 px-3 py-1 text-xs font-semibold text-white/70">
-                      Opcional
-                    </div>
-                  </div>
-                </div>
-              </SpotlightCard>
-            </motion.div>
-
-            <motion.div
-              variants={item}
-              className="mt-8 text-sm text-white/55"
-            >
-              Sem tabela engessada: orçamento sob medida com base em escopo,
-              prazo e complexidade.
-            </motion.div>
-          </motion.div>
-        </Section>
-
-        <Section id="portfolio">
-          <motion.div
-            variants={container}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, margin: "-80px" }}
-          >
-            <motion.div variants={item} className="max-w-2xl">
-              <div className="font-display text-2xl font-extrabold tracking-tight sm:text-3xl">
-                Portfólio que parece caro.
-              </div>
-              <div className="mt-3 text-base font-light leading-relaxed text-white/70">
-                Visual forte, hierarquia clara, micro-interações e execução
-                limpa. O objetivo não é “bonito”. É conversão.
-              </div>
-            </motion.div>
-
-            <motion.div
-              variants={item}
-              ref={portfolioRef}
-              onFocusCapture={() => setIsPortfolioPaused(true)}
-              onBlurCapture={() => setIsPortfolioPaused(false)}
-              onWheel={(e) => {
-                const el = portfolioRef.current;
-                if (!el) return;
-                if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
-                el.scrollLeft += e.deltaY;
-                e.preventDefault();
-              }}
-              onScroll={() => {
-                const el = portfolioRef.current;
-                if (!el) return;
-                const half = el.scrollWidth / 2;
-                const max = el.scrollWidth - el.clientWidth;
-                if (half <= 0 || max <= 0) return;
-                if (el.scrollLeft <= 0) el.scrollLeft += half;
-                else if (el.scrollLeft >= max) el.scrollLeft -= half;
-              }}
-              onPointerDown={(e) => {
-                if (portfolioResumeTimeoutRef.current != null) {
-                  window.clearTimeout(portfolioResumeTimeoutRef.current);
-                  portfolioResumeTimeoutRef.current = null;
-                }
-                setIsPortfolioPaused(true);
-                if (e.pointerType !== "mouse") return;
-                if (e.button !== 0) return;
-                const el = portfolioRef.current;
-                if (!el) return;
-                portfolioDragRef.current = {
-                  active: true,
-                  pointerId: e.pointerId,
-                  startX: e.clientX,
-                  startScrollLeft: el.scrollLeft,
-                };
-                el.setPointerCapture(e.pointerId);
-              }}
-              onPointerMove={(e) => {
-                const drag = portfolioDragRef.current;
-                if (!drag?.active) return;
-                const el = portfolioRef.current;
-                if (!el) return;
-                const dx = e.clientX - drag.startX;
-                el.scrollLeft = drag.startScrollLeft - dx;
-                const half = el.scrollWidth / 2;
-                const max = el.scrollWidth - el.clientWidth;
-                if (half <= 0 || max <= 0) return;
-                if (el.scrollLeft <= 0) {
-                  el.scrollLeft += half;
-                  drag.startScrollLeft += half;
-                } else if (el.scrollLeft >= max) {
-                  el.scrollLeft -= half;
-                  drag.startScrollLeft -= half;
-                }
-              }}
-              onPointerUp={() => {
-                const drag = portfolioDragRef.current;
-                const el = portfolioRef.current;
-                if (drag?.active && el) {
-                  try {
-                    el.releasePointerCapture(drag.pointerId);
-                  } catch (err) {
-                    void err;
-                  }
-                }
-                portfolioDragRef.current = null;
-                portfolioResumeTimeoutRef.current = window.setTimeout(() => {
-                  setIsPortfolioPaused(false);
-                }, 900);
-              }}
-              onPointerCancel={() => {
-                portfolioDragRef.current = null;
-                portfolioResumeTimeoutRef.current = window.setTimeout(() => {
-                  setIsPortfolioPaused(false);
-                }, 900);
-              }}
-              className="mt-10 flex gap-4 overflow-x-auto overflow-y-hidden pb-2 select-none [-ms-overflow-style:none] [scrollbar-width:none] [-webkit-overflow-scrolling:touch] [touch-action:pan-x] [&::-webkit-scrollbar]:hidden md:cursor-grab md:active:cursor-grabbing"
-            >
-              {portfolioItems.map((p, i) => (
-                <div
-                  key={`${p.title}-${i}`}
-                  data-portfolio-card="true"
-                  className="shrink-0 basis-[88%] sm:basis-[70%] md:basis-[calc(50%-0.5rem)] lg:basis-[calc(33.333%-0.666rem)]"
-                >
-                  <ProjectCard
-                    title={p.title}
-                    subtitle={p.subtitle}
-                    imageSrc={p.imageSrc}
-                    tags={p.tags}
-                    href={p.href}
-                  />
-                </div>
-              ))}
-            </motion.div>
-          </motion.div>
-        </Section>
-
-        <Section id="depoimentos">
-          <motion.div
-            variants={container}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, margin: "-80px" }}
-          >
-            <motion.div variants={item} className="max-w-2xl">
-              <div className="font-display text-2xl font-extrabold tracking-tight sm:text-3xl">
-                Depoimentos
-              </div>
-              <div className="mt-3 text-base font-light leading-relaxed text-white/70">
-                Exemplos de como clientes descrevem a entrega quando o site
-                começa a passar confiança e performar.
-              </div>
-              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-white/70">
-                <BadgeCheck className="h-4 w-4 text-[#7B2FFF]" />
-                Exemplos ilustrativos
-              </div>
-            </motion.div>
-
-            <motion.div variants={item} className="mt-10">
-              <SpotlightCard className="p-6" glow="rgba(123,47,255,0.12)">
-                <div className="grid gap-6 md:grid-cols-2">
-                  {TESTIMONIALS.map((t) => (
-                    <div key={`${t.name}-${t.company}`} className="border-l border-white/10 pl-4">
-                      <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-white/70">
-                        <BadgeCheck className="h-4 w-4 text-[#7B2FFF]" />
-                        {t.highlight}
-                      </div>
-                      <div className="mt-3 text-sm font-light leading-relaxed text-white/80">
-                        “{t.quote}”
-                      </div>
-                      <div className="mt-4 text-xs text-white/60">
-                        <span className="font-semibold text-white/75">{t.name}</span>{" "}
-                        · {t.role} · {t.company}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </SpotlightCard>
-            </motion.div>
-          </motion.div>
-        </Section>
-
-        <Section id="faq">
-          <motion.div
-            variants={container}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, margin: "-80px" }}
-          >
-            <motion.div variants={item} className="max-w-2xl">
-              <div className="font-display text-2xl font-extrabold tracking-tight sm:text-3xl">
-                FAQ curto + Garantia
-              </div>
-              <div className="mt-3 text-base font-light leading-relaxed text-white/70">
-                Respostas diretas e uma garantia anti-risco pós-entrega.
-              </div>
-            </motion.div>
-
-            <motion.div
-              variants={item}
-              className="mt-10 grid gap-4 lg:grid-cols-2"
-            >
-              <SpotlightCard className="p-6" glow="rgba(123,47,255,0.16)">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#7B2FFF]/15 text-[#7B2FFF]">
-                    <ShieldCheck className="h-5 w-5" />
-                  </div>
-                  <div className="rounded-full border border-white/12 bg-[#0A0A0A]/55 px-3 py-1 text-xs font-semibold text-white/70">
-                    30 dias contra bugs
-                  </div>
-                </div>
-                <div className="mt-4 font-display text-lg font-extrabold tracking-tight">
-                  Garantia anti-risco
-                </div>
-                <div className="mt-2 text-sm font-light leading-relaxed text-white/75">
-                  Qualquer bug técnico pós-entrega dentro de 30 dias é corrigido
-                  sem custo. Foco em previsibilidade e confiança.
-                </div>
-              </SpotlightCard>
-
-              <SpotlightCard className="p-6" glow="rgba(123,47,255,0.12)">
-                <div className="font-display text-lg font-extrabold tracking-tight">
-                  Perguntas frequentes
-                </div>
-                <div className="mt-4 divide-y divide-white/10">
-                  {FAQ_ITEMS.map((f) => (
-                    <details key={f.q} className="group py-4">
-                      <summary className="cursor-pointer list-none select-none">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="font-display text-sm font-extrabold tracking-tight text-white/90">
-                            {f.q}
-                          </div>
-                          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/70 transition-transform duration-200 group-open:rotate-90">
-                            <ChevronRight className="h-4 w-4" />
-                          </div>
-                        </div>
-                      </summary>
-                      <div className="mt-3 text-sm font-light leading-relaxed text-white/75">
-                        {f.a}
-                      </div>
-                    </details>
-                  ))}
-                </div>
-              </SpotlightCard>
-            </motion.div>
-          </motion.div>
-        </Section>
-
-        <Section id="processo">
-          <motion.div
-            variants={container}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, margin: "-80px" }}
-          >
-            <motion.div variants={item} className="max-w-2xl">
-              <div className="font-display text-2xl font-extrabold tracking-tight sm:text-3xl">
-                Como trabalhamos (sem drama).
-              </div>
-              <div className="mt-3 text-base font-light leading-relaxed text-white/70">
-                Processo curto, alinhamento claro e execução rápida. Você
-                acompanha tudo, sem microgerenciar.
-              </div>
-                <div className="mt-4 text-sm font-light leading-relaxed text-white/65">
-                  O mesmo playbook vale para landing pages, e-commerces e
-                  sistemas: clareza, velocidade e decisão guiada.
-                </div>
-            </motion.div>
-
-            <motion.div variants={item} className="mt-10">
-              <SpotlightCard className="p-6" glow="rgba(123,47,255,0.12)">
-                <div className="grid gap-6 sm:grid-cols-2">
-                  {[
-                    {
-                      n: "01",
-                      title: "Briefing cirúrgico",
-                      desc: "Objetivo, oferta e critérios de sucesso. Sem reunião infinita.",
-                      icon: <Sparkles className="h-5 w-5" />,
-                    },
-                    {
-                      n: "02",
-                      title: "UI/UX + Copy",
-                      desc: "Hierarquia, prova e CTA. Cada bloco existe por um motivo.",
-                      icon: <Layers className="h-5 w-5" />,
-                    },
-                    {
-                      n: "03",
-                      title: "Build rápido e sólido",
-                      desc: "Performance, acessibilidade e código que dá para evoluir.",
-                      icon: <Code2 className="h-5 w-5" />,
-                    },
-                    {
-                      n: "04",
-                      title: "Deploy + ajustes",
-                      desc: "Publica, mede, melhora. Sem lock-in e sem gambiarra.",
-                      icon: <ShieldCheck className="h-5 w-5" />,
-                    },
-                  ].map((s) => (
-                    <div key={s.n} className="flex items-start gap-4">
-                      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#7B2FFF]/15 text-[#7B2FFF]">
-                        {s.icon}
-                      </div>
-                      <div>
-                        <div className="text-xs font-semibold text-white/55">{s.n}</div>
-                        <div className="mt-1 font-display text-base font-extrabold tracking-tight">
-                          {s.title}
-                        </div>
-                        <div className="mt-2 text-sm font-light leading-relaxed text-white/70">
-                          {s.desc}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </SpotlightCard>
-            </motion.div>
-          </motion.div>
-        </Section>
-
-        <Section className="pb-20 sm:pb-24">
-          <motion.div
-            variants={section}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, margin: "-80px" }}
-            className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-7 shadow-[0_0_0_1px_rgba(255,255,255,0.05)_inset] sm:p-10"
-          >
-            <div className="pointer-events-none absolute inset-0">
-              <div className="absolute -right-28 -top-28 h-72 w-72 rounded-full bg-[#7B2FFF]/35 blur-3xl" />
-              <div className="absolute -bottom-28 -left-28 h-72 w-72 rounded-full bg-[#7B2FFF]/25 blur-3xl" />
-            </div>
-
-            <div className="relative grid gap-6 lg:grid-cols-12 lg:items-center">
-              <div className="lg:col-span-7">
-                <div className="inline-flex items-center gap-2 rounded-full bg-[#7B2FFF]/15 px-3 py-1 text-xs font-semibold text-[#F5F5F5]">
-                  <Zap className="h-4 w-4 text-[#7B2FFF]" />
-                  Vamos tirar isso do papel
-                </div>
-                <div className="mt-4 font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
-                  Se a sua presença digital não passa confiança, você perde
-                  dinheiro todo dia.
-                </div>
-                <div className="mt-3 max-w-2xl text-base font-light leading-relaxed text-white/70">
-                  Chama no WhatsApp e manda o que você tem hoje (ou só a ideia).
-                  A resposta vai ser direta: o que fazer, quanto custa e qual o
-                  próximo passo.
-                </div>
-              </div>
-
-              <div className="lg:col-span-5 lg:justify-self-end">
-                <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-stretch">
-                  <PrimaryButton href={WHATSAPP_HREF}>
-                    Falar com a Eight
-                  </PrimaryButton>
                   <a
-                    href="mailto:contato@8ightdigital.com.br"
-                    className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-medium text-white/90 backdrop-blur transition-all duration-200 hover:border-white/25 hover:bg-white/10"
+                    href={project.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    draggable={false}
+                    className={`group mt-8 inline-flex items-center gap-1.5 rounded-full text-[15px] font-semibold text-violet ${focusRing}`}
                   >
-                    contato@8ightdigital.com.br
+                    Visitar projeto
+                    <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                   </a>
                 </div>
-              </div>
-            </div>
-          </motion.div>
-        </Section>
-      </main>
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
-      <footer className="border-t border-white/10 bg-[#0A0A0A]">
-        <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6">
-          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-12">
-            <div className="lg:col-span-5">
-              <div className="flex items-center gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/5">
-                  <Image
-                    src="/projects/favicon.svg"
-                    alt="Eight Digital"
-                    width={22}
-                    height={22}
-                  />
+          <div
+            ref={tabsRef}
+            role="tablist"
+            aria-label="Escolher projeto"
+            className="mt-12 flex gap-6 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {PROJECTS.map((p, i) => {
+              const active = i === index;
+              return (
+                <button
+                  key={p.title}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => go(i)}
+                  className={`group min-w-[150px] flex-1 pb-1 text-left ${focusRing}`}
+                >
+                  <span className="relative block h-0.5 overflow-hidden rounded-full bg-onyx/10">
+                    {active && (
+                      <span
+                        key={index}
+                        className="absolute inset-0 origin-left bg-violet"
+                        style={
+                          autoplay
+                            ? {
+                                animation: `carousel-progress ${SLIDE_MS}ms linear forwards`,
+                                animationPlayState: paused ? "paused" : "running",
+                              }
+                            : undefined
+                        }
+                        onAnimationEnd={next}
+                      />
+                    )}
+                  </span>
+                  <span
+                    className={`mt-4 block truncate text-sm font-semibold transition-colors ${
+                      active ? "text-onyx" : "text-onyx/40 group-hover:text-onyx/70"
+                    }`}
+                  >
+                    {p.title}
+                  </span>
+                  <span className="mt-0.5 block truncate text-xs text-onyx/40">{p.tags[0]}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </Reveal>
+    </Section>
+  );
+}
+
+function ProjectVisual({ project }: { project: Project }) {
+  const domain = project.href.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  return (
+    <div className="relative aspect-[16/10] overflow-hidden rounded-3xl border border-onyx/[0.06] bg-gelo md:col-span-3">
+      {project.imageSrc && project.logo ? (
+        <div
+          className="absolute inset-0 grid place-items-center"
+          style={{ backgroundColor: project.logo.bg }}
+        >
+          <div
+            className={`relative aspect-square ${
+              project.logo.size === "sm" ? "h-[46%] max-h-[150px]" : "h-full"
+            }`}
+          >
+            <Image
+              src={project.imageSrc}
+              alt={`Logo ${project.title}`}
+              fill
+              draggable={false}
+              sizes="(max-width: 768px) 60vw, 420px"
+              className="pointer-events-none select-none object-contain"
+            />
+          </div>
+        </div>
+      ) : project.imageSrc ? (
+        <Image
+          src={project.imageSrc}
+          alt={`${project.title} — ${project.subtitle}`}
+          fill
+          draggable={false}
+          sizes="(max-width: 768px) 100vw, 660px"
+          style={{ objectPosition: project.imagePosition ?? "center 22%" }}
+          className="pointer-events-none select-none object-cover"
+        />
+      ) : (
+        <div className="absolute inset-0 flex flex-col justify-end bg-[linear-gradient(140deg,#461E7E_0%,#7000FF_100%)] p-8 sm:p-10">
+          <EightMark className="absolute -right-8 -top-8 h-64 w-auto text-white/[0.08]" />
+          <span className="relative font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+            {project.title}
+          </span>
+          <span className="relative mt-2 text-sm text-white/70">{domain}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Process() {
+  return (
+    <Section id="processo" tone="gelo">
+      <Reveal>
+        <Eyebrow>Processo</Eyebrow>
+        <Heading>Simples, rápido e previsível.</Heading>
+      </Reveal>
+
+      <ol className="mt-16 grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+        {STEPS.map((s, i) => (
+          <Reveal key={s.title} as="li" delay={i * 0.06} className="border-t-2 border-violet pt-6">
+            <span className="font-display text-sm font-semibold text-violet">0{i + 1}</span>
+            <h3 className="mt-3 font-display text-xl font-semibold">{s.title}</h3>
+            <p className="mt-2 text-[15px] leading-relaxed text-onyx/60">{s.desc}</p>
+          </Reveal>
+        ))}
+      </ol>
+    </Section>
+  );
+}
+
+function About() {
+  return (
+    <Section id="sobre" tone="deep">
+      <div className="grid gap-16 lg:grid-cols-2 lg:gap-20">
+        <Reveal>
+          <Eyebrow inverted>Sobre a Eight</Eyebrow>
+          <Heading>Duas mentes, uma ideia.</Heading>
+          <p className="mt-6 max-w-lg text-lg leading-relaxed text-white/75">
+            A Eight nasceu entre a estética e o código. Enquanto um molda a autoridade
+            visual da sua marca, o outro constrói a infraestrutura robusta que a faz
+            escalar. Onde o design minucioso encontra a engenharia implacável.
+          </p>
+        </Reveal>
+
+        <div className="grid content-center gap-4">
+          {[
+            { name: "Gabriel Oliveira", role: "Design & Branding", initials: "GO" },
+            { name: "Daniel Melo", role: "Desenvolvimento & Engenharia", initials: "DM" },
+          ].map((p, i) => (
+            <Reveal key={p.name} delay={i * 0.08}>
+              <div className="flex items-center gap-5 rounded-2xl border border-white/10 p-6">
+                <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-violet font-display text-lg font-semibold">
+                  {p.initials}
                 </div>
                 <div>
-                  <div className="font-display text-base font-extrabold tracking-tight">
-                    Eight Digital
-                  </div>
-                  <div className="text-sm text-white/60">
-                    Agência de desenvolvimento web
-                  </div>
+                  <p className="font-display text-lg font-semibold">{p.name}</p>
+                  <p className="text-[15px] text-white/65">{p.role}</p>
                 </div>
               </div>
-              <div className="mt-4 max-w-md text-sm font-light leading-relaxed text-white/65">
-                Construímos landing pages, e-commerces e sistemas com visual
-                premium, performance e base técnica pra você escalar sem dor.
-              </div>
+            </Reveal>
+          ))}
+          <Reveal delay={0.16}>
+            <div className="flex items-center gap-5 rounded-2xl border border-white/10 p-6">
+              <ShieldCheck className="h-6 w-6 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+              <p className="text-[15px] text-white/75">
+                <span className="font-semibold text-white">Garantia de 30 dias:</span> qualquer bug
+                técnico pós-entrega é corrigido sem custo.
+              </p>
             </div>
-
-            <div className="sm:col-span-1 lg:col-span-3">
-              <div className="text-sm font-semibold text-white/80">Contato</div>
-              <div className="mt-4 flex flex-col gap-3 text-sm text-white/70">
-                <a
-                  href={WHATSAPP_HREF}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 transition-colors hover:text-white"
-                >
-                  <MessageCircle className="h-4 w-4" /> WhatsApp comercial{" "}
-                  <ArrowRight className="h-4 w-4" />
-                </a>
-                <a
-                  href="mailto:contato@8ightdigital.com.br"
-                  className="inline-flex items-center gap-2 transition-colors hover:text-white"
-                >
-                  <Mail className="h-4 w-4" /> contato@8ightdigital.com.br{" "}
-                  <ArrowRight className="h-4 w-4" />
-                </a>
-                <a
-                  href="https://www.instagram.com/8ight.digital/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 transition-colors hover:text-white"
-                >
-                  <Instagram className="h-4 w-4" /> @8ight.digital{" "}
-                  <ArrowRight className="h-4 w-4" />
-                </a>
-              </div>
-            </div>
-
-            <div className="lg:col-span-4">
-              <div className="text-sm font-semibold text-white/80">
-                Navegação
-              </div>
-              <div className="mt-4 flex flex-col gap-3 text-sm text-white/70">
-                <a
-                  href="#servicos"
-                  className="inline-flex items-center gap-2 transition-colors hover:text-white"
-                >
-                  Serviços <ArrowRight className="h-4 w-4" />
-                </a>
-                <a
-                  href="#portfolio"
-                  className="inline-flex items-center gap-2 transition-colors hover:text-white"
-                >
-                  Portfólio <ArrowRight className="h-4 w-4" />
-                </a>
-                <a
-                  href="#processo"
-                  className="inline-flex items-center gap-2 transition-colors hover:text-white"
-                >
-                  Como trabalhamos <ArrowRight className="h-4 w-4" />
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-10 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
-            <div>© {new Date().getFullYear()} Eight Digital. Todos os direitos reservados.</div>
-            <div className="text-white/45">
-              Feito com Next.js, Tailwind e Framer Motion.
-            </div>
-          </div>
+          </Reveal>
         </div>
-      </footer>
-    </div>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      <path
-        d="M20 7L10 17L4 11"
-        stroke={BRAND.purple}
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  hint,
-}: {
-  label: string;
-  value: string;
-  hint: string;
-}) {
-  return (
-    <div className="px-1 sm:px-2">
-      <div className="text-xs font-semibold text-white/55">{label}</div>
-      <div className="mt-2 font-display text-3xl font-extrabold tracking-tight">
-        {value}
       </div>
-      <div className="mt-1 text-sm font-light text-white/60">{hint}</div>
-    </div>
+    </Section>
   );
 }
 
-function ProjectCard({
-  title,
-  subtitle,
-  imageSrc,
-  tags,
-  href,
-}: {
-  title: string;
-  subtitle: string;
-  imageSrc?: string;
-  tags: string[];
-  href?: string;
-}) {
-  const resolvedHref = href ?? WHATSAPP_HREF;
-  const isExternal =
-    resolvedHref.startsWith("http://") ||
-    resolvedHref.startsWith("https://") ||
-    resolvedHref.startsWith("mailto:") ||
-    resolvedHref.startsWith("tel:") ||
-    resolvedHref === WHATSAPP_HREF;
-
-  const initials = title
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => (w[0] ?? "").toUpperCase())
-    .join("");
-
+function Faq() {
   return (
-    <SpotlightCard
-      className="p-0"
-      glow="rgba(123,47,255,0.18)"
-    >
-      <a
-        href={resolvedHref}
-        target={isExternal ? "_blank" : undefined}
-        rel={isExternal ? "noreferrer" : undefined}
-        className="group flex h-full flex-col overflow-hidden rounded-2xl"
-      >
-        <div className="relative aspect-[16/10] overflow-hidden">
-          {imageSrc ? (
-            <Image
-              src={imageSrc}
-              alt={title}
-              fill
-              className="object-cover transition-transform duration-300 group-hover:scale-[1.04]"
-              sizes="(max-width: 1024px) 100vw, 33vw"
-              priority={false}
-            />
-          ) : (
-            <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_20%_25%,rgba(123,47,255,0.35)_0%,transparent_60%),radial-gradient(55%_55%_at_80%_55%,rgba(245,245,245,0.12)_0%,transparent_62%),linear-gradient(to_bottom,rgba(255,255,255,0.06),rgba(10,10,10,0.65))]">
-              <div className="absolute inset-0 opacity-50 [background-image:linear-gradient(to_right,rgba(245,245,245,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(245,245,245,0.06)_1px,transparent_1px)] [background-size:64px_64px]" />
-              <div className="absolute inset-0 grid place-items-center">
-                <div className="rounded-2xl border border-white/12 bg-[#0A0A0A]/55 px-4 py-2 font-display text-2xl font-extrabold tracking-tight text-white/85 shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset]">
-                  {initials}
-                </div>
-              </div>
-            </div>
-          )}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-transparent opacity-80" />
-          <div className="pointer-events-none absolute inset-0 shadow-[0_0_0_1px_rgba(255,255,255,0.05)_inset]" />
-        </div>
+    <Section id="faq">
+      <div className="grid gap-12 lg:grid-cols-5 lg:gap-16">
+        <Reveal className="lg:col-span-2">
+          <Eyebrow>FAQ</Eyebrow>
+          <Heading>Perguntas frequentes.</Heading>
+          <p className="mt-6 text-[15px] leading-relaxed text-onyx/60">
+            Não encontrou o que procurava?{" "}
+            <a
+              href={WHATSAPP_HREF}
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-violet underline-offset-4 hover:underline"
+            >
+              Fale com a gente
+            </a>
+            .
+          </p>
+        </Reveal>
 
-        <div className="flex flex-1 flex-col p-5">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="font-display text-lg font-extrabold tracking-tight">
-                {title}
-              </div>
-              <div className="mt-1 text-sm font-light text-white/70">
-                {subtitle}
-              </div>
-            </div>
-            <div className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/70 transition-colors duration-200 group-hover:border-white/15 group-hover:text-white">
-              <ArrowRight className="h-4 w-4" />
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            {tags.map((t) => (
-              <div
-                key={t}
-                className="rounded-full border border-white/10 bg-[#0A0A0A]/45 px-3 py-1 text-xs text-white/70"
-              >
-                {t}
-              </div>
+        <Reveal className="lg:col-span-3">
+          <div className="divide-y divide-onyx/10 border-y border-onyx/10">
+            {FAQ_ITEMS.map((f) => (
+              <details key={f.q} className="group">
+                <summary
+                  className={`flex cursor-pointer list-none items-center justify-between gap-6 py-6 font-display text-lg font-semibold text-onyx [&::-webkit-details-marker]:hidden ${focusRing}`}
+                >
+                  {f.q}
+                  <Plus
+                    className="h-5 w-5 shrink-0 text-violet transition-transform duration-200 group-open:rotate-45"
+                    aria-hidden="true"
+                  />
+                </summary>
+                <p className="-mt-2 pb-6 pr-10 text-[15px] leading-relaxed text-onyx/65">{f.a}</p>
+              </details>
             ))}
           </div>
+        </Reveal>
+      </div>
+    </Section>
+  );
+}
 
-          <div className="mt-5 text-sm font-semibold text-white/75">
-            Ver como a Eight entrega <span style={{ color: BRAND.purple }}>UX + performance</span>
+function FinalCta() {
+  return (
+    <section className="bg-white px-5 pb-24 sm:px-8 sm:pb-32">
+      <Reveal>
+        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-violet px-7 py-16 text-center text-white sm:px-16 sm:py-24">
+          <EightMark
+            className="pointer-events-none absolute -right-10 -top-10 h-72 w-auto text-white/[0.07] sm:h-96"
+          />
+          <h2 className="relative mx-auto max-w-3xl font-display text-3xl font-semibold tracking-tight sm:text-5xl sm:leading-[1.08]">
+            Vamos construir a estrutura digital da sua marca?
+          </h2>
+          <p className="relative mx-auto mt-5 max-w-xl text-lg text-white/80">
+            Mande o que você tem hoje — ou só a ideia. A resposta é direta: o que fazer,
+            quanto custa e qual o próximo passo.
+          </p>
+          <div className="relative mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <PrimaryButton href={WHATSAPP_HREF} inverted>
+              Conversar no WhatsApp
+            </PrimaryButton>
+            <a
+              href={`mailto:${EMAIL}`}
+              className="rounded-full px-4 text-[15px] font-medium text-white/85 underline-offset-4 hover:text-white hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            >
+              {EMAIL}
+            </a>
           </div>
         </div>
-      </a>
-    </SpotlightCard>
+      </Reveal>
+    </section>
+  );
+}
+
+function Footer() {
+  const links = [
+    { href: WHATSAPP_HREF, label: "WhatsApp", icon: MessageCircle, external: true },
+    { href: `mailto:${EMAIL}`, label: "E-mail", icon: Mail, external: false },
+    { href: "https://www.instagram.com/8ight.digital/", label: "Instagram", icon: Instagram, external: true },
+  ];
+  return (
+    <footer className="border-t border-onyx/[0.06] bg-white">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 py-12 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <div>
+          <Logo />
+          <p className="mt-3 text-sm text-onyx/50">
+            © {new Date().getFullYear()} Eight Digital. Fortaleza, Brasil.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {links.map((l) => (
+            <a
+              key={l.label}
+              href={l.href}
+              aria-label={l.label}
+              {...(l.external ? { target: "_blank", rel: "noreferrer" } : {})}
+              className={`grid h-11 w-11 place-items-center rounded-full border border-onyx/10 text-onyx/60 transition-colors hover:border-violet hover:text-violet ${focusRing}`}
+            >
+              <l.icon className="h-[18px] w-[18px]" aria-hidden="true" />
+            </a>
+          ))}
+        </div>
+      </div>
+    </footer>
   );
 }
