@@ -1,27 +1,28 @@
 import type { Metadata } from "next";
-import { Instrument_Sans, Outfit } from "next/font/google";
+import { Montserrat, Sora } from "next/font/google";
 import type React from "react";
 
 import "./globals.css";
 
-const bodyFont = Instrument_Sans({
+// Montserrat é a fonte de texto da marca; Sora substitui a Francy (display), que não está no Google Fonts.
+const bodyFont = Montserrat({
   subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: ["400", "500", "600"],
   variable: "--font-body",
   display: "swap",
 });
 
-const displayFont = Outfit({
+const displayFont = Sora({
   subsets: ["latin"],
-  weight: ["700", "800"],
+  weight: ["600", "700"],
   variable: "--font-display",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Eight Digital — Desenvolvimento Web",
+  title: "Eight Digital — Soluções Digitais",
   description:
-    "Landing pages, e-commerces e sistemas rápidos, estáveis e com UX premium. Sem enrolação, com entrega.",
+    "Não criamos apenas websites. Construímos estruturas digitais: landing pages, e-commerces e sistemas com design estratégico e engenharia sólida.",
 };
 
 export default function RootLayout({
@@ -30,11 +31,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="pt-BR"
-      className={`${bodyFont.variable} ${displayFont.variable} dark`}
-    >
-      <body className="min-h-screen bg-[#0A0A0A] font-sans text-[#F5F5F5] antialiased">
+    <html lang="pt-BR" className={`${bodyFont.variable} ${displayFont.variable}`}>
+      <body className="min-h-screen bg-white font-sans text-onyx antialiased">
         {children}
       </body>
     </html>

@@ -1,12 +1,18 @@
 /** @type {import('tailwindcss').Config} */
 
 export default {
-  darkMode: "class",
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
+      colors: {
+        // Paleta oficial Eight (Behance: EIGHT digital)
+        violet: "#7000FF", // Electric Violet
+        deep: "#461E7E", // Deep Purple
+        onyx: "#121212", // Onyx
+        gelo: "#F8F9FA", // Branco Gelo
+      },
       fontFamily: {
         sans: ["var(--font-body)", "ui-sans-serif", "system-ui", "sans-serif"],
         display: [
@@ -15,13 +21,6 @@ export default {
           "system-ui",
           "sans-serif",
         ],
-      },
-      container: {
-        center: true,
-        padding: "2rem",
-        screens: {
-          "2xl": "1400px",
-        },
       },
     },
   },
